@@ -164,7 +164,26 @@ header {
         background-color: white;
         border-bottom: 1px solid var(--gray-100);
         box-shadow: var(--shadow-sm);
-      }
+      }.header-inner {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    max-width: 768px !important;
+    margin: 0 auto !important;
+    padding: 0 1rem !important;
+    min-height: 64px !important;
+}
+
+.header-inner .header-logo {
+    display: block !important;
+    width: 140px !important;
+    height: auto !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    position: relative !important;
+    z-index: 20 !important;
+}
 
       .header-container {
         display: flex;
