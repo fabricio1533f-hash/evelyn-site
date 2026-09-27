@@ -1,0 +1,12 @@
+{
+  "name": "evelyn-syncpay-checkout",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Checkout personalizado com integração server-side à SyncPay.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
