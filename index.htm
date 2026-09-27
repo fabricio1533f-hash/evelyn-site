@@ -157,22 +157,25 @@ header {
       }
 
       /* Header */
-      .header {
-    position: sticky;
-    top: 0;
-    z-index: 10;
+    .header {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
     background-color: white;
     border-bottom: 1px solid var(--gray-100);
     box-shadow: var(--shadow-sm);
-    height: 340px !important;
+    height: 64px !important;
 }
+
       .header-inner {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     position: relative !important;
     width: 100% !important;
-    height: 100% !important;
+    height: 64px !important;
     max-width: 768px !important;
     margin: 0 auto !important;
     padding: 0 1rem !important;
