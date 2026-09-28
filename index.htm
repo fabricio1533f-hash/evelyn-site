@@ -1702,7 +1702,7 @@ Bem vindo(a) meus amores ❤️
         const chevron = document.querySelector(".chevron");
         let promotionsOpen = true;
 
-        promotionsHeader.addEventListener("click", () => {
+        promotionsHeader.onclick = () => {
           promotionsOpen = !promotionsOpen;
 
           if (promotionsOpen) {
