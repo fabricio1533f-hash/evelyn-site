@@ -942,121 +942,101 @@ subscription-button {
   width: 100% !important;
   margin: 10px 0 !important;
 }
-        /* ===== OFERTA DE ASSINATURA ===== */
+        <!-- OFERTA DE ASSINATURA -->
+<div class="card subscription-offer-card">
 
-.subscription-offer-card {
-  background: #f7f6f3 !important;
-  border-radius: 28px !important;
-  padding: 28px !important;
-}
+  <div class="card-header">
+    <h3>✨ Oferta de assinatura</h3>
+  </div>
 
-.subscription-offer-card .card-header {
-  margin-bottom: 24px !important;
-}
+  <div class="card-content">
 
-.subscription-offer-card .card-header h3 {
-  margin: 0 !important;
-  font-size: 28px !important;
-  font-weight: 700 !important;
-  color: #333333 !important;
-}
+    <div class="offer-promotion">
+      <img src="images/fotoperfilmelmaia1.jpg" alt="">
+      <span>Promoção 24h</span>
+    </div>
 
-.subscription-offer-card .card-content {
-  padding: 0 !important;
-}
+    <a href="#" class="subscription-link" data-plan="30-dias">
 
-/* Promoção 24h */
-.subscription-offer-card .card-content > div[style*="display:flex"] {
-  display: flex !important;
-  align-items: center !important;
-  gap: 12px !important;
-  width: 100% !important;
-  min-height: 64px !important;
-  box-sizing: border-box !important;
-  background: #ffffff !important;
-  border-radius: 16px !important;
-  padding: 10px 14px !important;
-  margin: 0 0 105px 0 !important;
-}
+      <div class="offer-main">
 
-.subscription-offer-card .card-content > div[style*="display:flex"] img {
-  width: 38px !important;
-  height: 38px !important;
-  flex: 0 0 38px !important;
-  border-radius: 50% !important;
-  object-fit: cover !important;
-}
+        <span class="offer-discount">
+          Economize 48%
+        </span>
 
-.subscription-offer-card .card-content > div[style*="display:flex"] span {
-  font-size: 18px !important;
-  color: #374151 !important;
-}
+        <button class="subscription-button primary" type="button">
+          <b>Assinar agora</b>
+          <span class="price">R$ 20,90</span>
+        </button>
 
-/* Área do botão */
-.subscription-offer-card .subscription-link {
-  margin: 0 !important;
-  width: 100% !important;
-}
+        <div class="offer-original">
+          Preço original
+          <span>R$ 39,90</span>
+        </div>
 
-.subscription-offer-card .subscription-link > div {
-  position: relative !important;
-  margin-top: 0 !important;
-}
+      </div>
 
-/* Economize 48% */
-.subscription-offer-card .subscription-link > div > span {
-  position: absolute !important;
-  top: -28px !important;
-  left: 45px !important;
-  background: #effcf2 !important;
-  color: #34c759 !important;
-  font-size: 18px !important;
-  font-weight: 600 !important;
-  padding: 6px 14px !important;
-  border-radius: 14px !important;
-  z-index: 2 !important;
-  white-space: nowrap !important;
-}
+    </a>
 
-/* Botão principal */
-.subscription-offer-card .subscription-button {
-  width: 100% !important;
-  height: 72px !important;
-  min-height: 72px !important;
-  padding: 0 28px !important;
-  border: none !important;
-  border-radius: 40px !important;
-  background: linear-gradient(90deg, #ffad55, #f59b8f) !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 12px !important;
-  color: #000000 !important;
-  font-size: 28px !important;
-  font-weight: 600 !important;
-}
+  </div>
 
-/* Texto do botão */
-.subscription-offer-card .subscription-button b {
-  color: #000000 !important;
-  font-size: 28px !important;
-  font-weight: 600 !important;
-}
+</div>
 
-.subscription-offer-card .subscription-button .price {
-  color: #000000 !important;
-  font-size: 28px !important;
-  font-weight: 600 !important;
-}
 
-/* Preço original */
-.subscription-offer-card .subscription-link > div > div {
-  margin-top: 12px !important;
-  padding-right: 18px !important;
-  text-align: right !important;
-  color: #374151 !important;
-  font-size: 18px !important;
-}
+<!-- ASSINATURAS -->
+<div class="card subscriptions-card">
+
+  <div class="card-content">
+
+    <div class="promotions">
+
+      <div class="promotions-header">
+        <h4>Assinaturas</h4>
+
+        <svg
+          class="chevron"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </div>
+
+      <a href="#" class="subscription-link" data-plan="3-meses">
+        <button class="subscription-button primary" type="button">
+          <div class="button-left">
+            <span>3 meses (5% off)</span>
+          </div>
+
+          <span class="price highlight">
+            R$ 39,90
+          </span>
+        </button>
+      </a>
+
+      <a href="#" class="subscription-link" data-plan="1-ano">
+        <button class="subscription-button primary" type="button">
+          <div class="button-left">
+            <span>6 meses (10% off)</span>
+          </div>
+
+          <span class="price highlight">
+            R$ 69,90
+          </span>
+        </button>
+      </a>
+
+    </div>
+
+  </div>
+
+</div>
     </style>
 
   
