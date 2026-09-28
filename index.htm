@@ -1036,7 +1036,28 @@ subscription-button {
 
   </div>
 
-</div>
+</div>.subscription-offer-card .card-header h3 {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.subscription-offer-card .offer-sparkles {
+  display: inline-block !important;
+  font-size: 28px !important;
+  background: linear-gradient(135deg, #f7b44b, #ff8a3d) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  flex-shrink: 0 !important;
+}
+
+@media (max-width: 600px) {
+  .subscription-offer-card .offer-sparkles {
+    font-size: 24px !important;
+  }
+}
     </style>
 
   
