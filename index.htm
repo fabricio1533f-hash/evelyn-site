@@ -1068,8 +1068,9 @@ subscription-button {
   margin-top: -14px !important;
   margin-bottom: -14px !important;
 }
-   /* ===== AJUSTE FINAL PC + MOBILE ===== */
+  /* ===== AJUSTE FINAL MOBILE + PC ===== */
 
+/* PC */
 .banner {
     height: 10rem !important;
 }
@@ -1089,16 +1090,21 @@ subscription-button {
     top: calc(64px + 10rem) !important;
 }
 
+
+/* ===== MOBILE ===== */
 @media (max-width: 480px) {
 
+    /* Banner curto como na referência */
     .banner {
-        height: 10rem !important;
+        height: 6rem !important;
     }
 
+    /* Remove espaço extra entre banner/perfil/oferta */
     .profile-section {
         margin-bottom: 0 !important;
     }
 
+    /* Foto de perfil */
     .profile-image-container {
         width: 80px !important;
         height: 80px !important;
@@ -1106,14 +1112,16 @@ subscription-button {
         left: 0.4rem !important;
     }
 
+    /* Stats colados logo abaixo do banner */
     .banner-stats {
-        top: calc(64px + 10rem) !important;
+        top: calc(64px + 6rem) !important;
         gap: 0.75rem !important;
         padding-left: 5.5rem !important;
         padding-right: 0.75rem !important;
         font-size: 0.75rem !important;
     }
 
+    /* Perfil começa logo depois dos stats */
     .profile-card {
         margin-top: 1rem !important;
     }
