@@ -947,7 +947,10 @@ subscription-button {
 
   <div class="card-header">
 <h3>
-  <i class="fa-solid fa-sparkles offer-sparkles"></i>
+  <svg class="offer-sparkles" viewBox="0 0 24 24" aria-hidden="true">
+  <path d="M12 2l1.6 6.4L20 10l-6.4 1.6L12 18l-1.6-6.4L4 10l6.4-1.6L12 2z"></path>
+  <path d="M19 15l.7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7L19 15z"></path>
+</svg>
   Oferta de assinatura
 </h3>
   </div>
@@ -1045,20 +1048,18 @@ subscription-button {
   gap: 12px !important;
 }
 
-.subscription-offer-card .offer-sparkles {
+subscription-offer-card .offer-sparkles {
   display: inline-block !important;
-  font-size: 28px !important;
-  background: linear-gradient(135deg, #f7b44b, #ff8a3d) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  color: transparent !important;
+  width: 28px !important;
+  height: 28px !important;
   flex-shrink: 0 !important;
+  fill: #f7a83d !important;
 }
 
 @media (max-width: 600px) {
   .subscription-offer-card .offer-sparkles {
-    font-size: 24px !important;
+    width: 24px !important;
+    height: 24px !important;
   }
 }
     </style>
