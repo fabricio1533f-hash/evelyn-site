@@ -26,6 +26,26 @@
 }
 </style>
 <style>
+    /* BOTÃO DA OFERTA — IGUAL À REFERÊNCIA */
+.subscription-offer-card .offer-main {
+    width: calc(100% + 88px) !important;
+    margin-left: -44px !important;
+}
+
+.subscription-offer-card .subscription-button {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 58px !important;
+    min-height: 58px !important;
+    border-radius: 30px !important;
+    box-sizing: border-box !important;
+}
+
+/* ECONOMIZE acompanha o botão */
+.subscription-offer-card .offer-discount {
+    left: 45px !important;
+    transform: none !important;
+}
 header {
     padding: 0 !important;
     margin: 0 !important;
@@ -1278,16 +1298,9 @@ subscription-button {
         width: 24px !important;
         height: 24px !important;
     }
-.subscription-button,
-.subscription-offer-card .subscription-button,
-.subscriptions-card .subscription-button {
-    background: linear-gradient(90deg, #f9a24a 0%, #f5a0a0 100%) !important;
-    background-image: linear-gradient(90deg, #f9a24a 0%, #f5a0a0 100%) !important;
-}
-
-.subscription-button:hover,
-.subscription-offer-card .subscription-button:hover,
-.subscriptions-card .subscription-button:hover {
+/* COR FINAL DOS 3 BOTÕES */
+button.subscription-button,
+.subscription-button {
     background: linear-gradient(90deg, #f9a24a 0%, #f5a0a0 100%) !important;
     background-image: linear-gradient(90deg, #f9a24a 0%, #f5a0a0 100%) !important;
 }
