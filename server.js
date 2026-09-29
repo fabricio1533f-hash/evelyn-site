@@ -235,7 +235,7 @@ async function createPix(body) {
   };
 
   const response = await fetch(
-    `${OMEGAPAY_BASE_URL}/api/v1/gateway/pix/receive`,
+   ${OMEGAPAY_BASE_URL}/gateway/pix/receive,
     {
       method: 'POST',
 
