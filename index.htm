@@ -3,7 +3,13 @@
 
 <script src="../scripts/utms/latest.js" data-utmify-prevent-xcod-sck="" data-utmify-prevent-subids="" async="" defer=""></script>
 
-<style>
+<style>/* BLOQUEIA O BANNER NO PC DURANTE O CARREGAMENTO */
+@media (min-width: 769px) {
+  html:not(.pagina-pronta) .banner-stats {
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+}
 .logo img {
     width: 250px !important;
     height: auto !important;
