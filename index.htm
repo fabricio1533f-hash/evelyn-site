@@ -69,7 +69,11 @@ header {
 .logo-image {
     display: block;
     margin: 0 auto !important;
-}
+}<script>
+window.addEventListener('load', function () {
+  document.documentElement.classList.add('pagina-pronta');
+});
+</script>
 </style>
 </head>
 
@@ -1648,6 +1652,17 @@ button.subscription-button,
     stroke-width: 1.5 !important;
 }
 }
+}/* ===== BLOQUEIA O FLASH DOS ÍCONES NO PC ===== */
+@media (min-width: 769px) {
+  html:not(.pagina-pronta) .banner-stats {
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+
+  html.pagina-pronta .banner-stats {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
 }
   </style>
 
