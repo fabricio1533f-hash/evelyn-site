@@ -2365,7 +2365,7 @@ Bem vindo(a) meus amores 🥰
         <div class="syncpay-pix" id="syncpayPixView">
           <h3>PIX gerado</h3>
           <p id="syncpayAmountText"></p>
-          <canvas id="syncpayQr"></canvas>
+          <img id="syncpayQrImage" alt="QR Code PIX" style="width:230px;height:230px;display:block;margin:10px auto;">
           <textarea class="syncpay-code" id="syncpayCode" readonly></textarea>
           <button class="syncpay-copy" type="button" id="syncpayCopy">Copiar PIX Copia e Cola</button>
           <div class="syncpay-status" id="syncpayStatus">Aguardando confirmação do pagamento…</div>
@@ -2584,15 +2584,10 @@ Bem vindo(a) meus amores 🥰
             amountText.textContent = `${result.label} — R$ ${Number(result.amount).toFixed(2).replace('.', ',')}`;
             formView.style.display = 'none';
             pixView.style.display = 'block';
-       if (result.pix_code) {
-    const qr = document.getElementById('syncpayQr');
+       const qrImage = document.getElementById('syncpayQrImage');
 
-    if (qr && typeof QRCode !== 'undefined') {
-        QRCode.toCanvas(qr, result.pix_code, {
-            width: 230,
-            margin: 2
-        });
-    }
+if (qrImage && result.pix_image) {
+    qrImage.src = result.pix_image;
 }
             status.textContent = 'Aguardando confirmação do pagamento…';
             pollTimer = setInterval(async () => {
