@@ -2579,6 +2579,7 @@ Bem vindo(a) meus amores 🥰
               body: JSON.stringify({ plan: currentPlan, customer: data })
             });
             const result = await response.json();
+            console.log('RESULTADO PIX:', result);
             if (!response.ok) throw new Error(result.error || 'Não foi possível gerar o PIX.');
             code.value = result.pix_code;
             amountText.textContent = `${result.label} — R$ ${Number(result.amount).toFixed(2).replace('.', ',')}`;
