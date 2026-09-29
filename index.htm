@@ -1646,6 +1646,18 @@ button.subscription-button,
     fill: none !important;
     stroke: #354158 !important;
     stroke-width: 1.5 !important;
+}/* ===== REMOVE O FLASH DOS ÍCONES NO PC ===== */
+@media (min-width: 769px) {
+  .banner-stats {
+    visibility: hidden !important;
+    animation: mostrarBannerStats 0s 0.1s forwards !important;
+  }
+
+  @keyframes mostrarBannerStats {
+    to {
+      visibility: visible;
+    }
+  }
 }
   </style>
 
