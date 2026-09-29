@@ -1366,16 +1366,141 @@ button.subscription-button,
     display: flex !important;
     align-items: center !important;
     white-space: nowrap !important;
-}/* ===== PC IGUAL AO VISUAL MOBILE ===== */
+}/* ===== PC COM O MESMO VISUAL DO MOBILE ===== */
 @media (min-width: 769px) {
 
+    /* PÁGINA / ESPAÇAMENTO */
+    main {
+        padding-top: 0 !important;
+    }
+
+    .profile-section {
+        margin-bottom: 0 !important;
+    }
+
+    /* BANNER IGUAL AO MOBILE */
+    .banner {
+        height: 6rem !important;
+        margin-bottom: 0 !important;
+    }
+
+    /* FOTO DE PERFIL IGUAL AO MOBILE */
+    .profile-image-container {
+        width: 80px !important;
+        height: 80px !important;
+        bottom: -2.5rem !important;
+        left: 0.4rem !important;
+    }
+
+    /* STATS IGUAL AO MOBILE */
+    .banner-stats {
+        top: calc(64px + 6rem - 18px) !important;
+        gap: 0.5rem !important;
+        padding: 0 0.5rem 0 6rem !important;
+        font-size: 1rem !important;
+        height: 28px !important;
+        display: flex !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
+    }
+
+    .banner-stats .stat {
+        display: flex !important;
+        align-items: center !important;
+        white-space: nowrap !important;
+    }
+
+    /* PERFIL */
+    .profile-card {
+        margin-top: 0 !important;
+        padding-top: 42px !important;
+    }
+
+    .profile-card .card-content {
+        padding-top: 0 !important;
+    }
+
+    .profile-card .name {
+        margin-top: 0 !important;
+        margin-bottom: 4px !important;
+        line-height: 1.1 !important;
+    }
+
+    .profile-card .username {
+        margin-top: 0 !important;
+        margin-bottom: 12px !important;
+        line-height: 1.2 !important;
+    }
+
+    .profile-card .bio {
+        margin-top: 0 !important;
+        margin-bottom: 14px !important;
+        line-height: 1.35 !important;
+    }
+
+    /* ABAS / ESTATÍSTICAS */
+    .content-tabs {
+        margin-top: 1.5rem !important;
+    }
+
+    .tabs {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        width: 100% !important;
+        height: 78px !important;
+        background: #fff !important;
+        border-radius: 22px !important;
+        overflow: hidden !important;
+        margin-bottom: 1.5rem !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,.08) !important;
+    }
+
+    .tab {
+        position: relative !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 10px !important;
+        height: 78px !important;
+        padding: 0 !important;
+        background: #fff !important;
+        border: none !important;
+        border-radius: 0 !important;
+        color: #374151 !important;
+        font-size: 1.1rem !important;
+        font-weight: 400 !important;
+    }
+
+    .tab svg {
+        width: 24px !important;
+        height: 24px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .tab.active {
+        background: #fff !important;
+        color: #f28b38 !important;
+        font-weight: 500 !important;
+    }
+
+    .tab.active::after {
+        content: "" !important;
+        position: absolute !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 4px !important;
+        background: #f28b38 !important;
+    }
+
+    /* CARD DA OFERTA */
     .subscription-offer-card {
         background: #f9f6f2 !important;
     }
 
     .subscription-offer-card .promotion-title {
         font-family: "Inter", sans-serif !important;
-        font-size: 20px !important;<
+        font-size: 16px !important;
         font-weight: 600 !important;
         color: #1f2937 !important;
     }
@@ -1392,22 +1517,44 @@ button.subscription-button,
         color: #374151 !important;
     }
 
-    .subscription-offer-card .subscription-link .subscription-button {
-        background: linear-gradient(90deg, #f9a24a 0%, #f5a0a0 100%) !important;
-        background-image: linear-gradient(90deg, #f9a24a 0%, #f5a0a0 100%) !important;
-        color: #000 !important;
-        border-radius: 30px !important;
+    /* BOTÃO DA OFERTA */
+    .subscription-offer-card .offer-main {
+        width: calc(100% + 88px) !important;
+        margin-left: -44px !important;
     }
 
+    .subscription-offer-card .subscription-button {
+        width: calc(100% + 88px) !important;
+        min-width: 0 !important;
+        height: 58px !important;
+        min-height: 58px !important;
+        margin-left: -44px !important;
+        border-radius: 30px !important;
+        box-sizing: border-box !important;
+        background: linear-gradient(
+            90deg,
+            #f9a24a 0%,
+            #f5a0a0 100%
+        ) !important;
+        background-image: linear-gradient(
+            90deg,
+            #f9a24a 0%,
+            #f5a0a0 100%
+        ) !important;
+    }
+
+    /* ECONOMIZE 48% */
     .subscription-offer-card .subscription-link > div > span:first-child {
-        left: 45px !important;
+        left: -34px !important;
         top: -18px !important;
     }
 
-    .subscription-offer-card .subscription-link > div {
-        margin-top: 45px !important;
+    .subscription-offer-card .offer-discount {
+        left: 45px !important;
+        transform: none !important;
     }
 
+    /* TEXTO DO BOTÃO */
     .subscription-offer-card .subscription-button b {
         color: #000 !important;
         font-weight: 600 !important;
@@ -1418,8 +1565,32 @@ button.subscription-button,
         font-weight: 700 !important;
     }
 
+    /* PREÇO ORIGINAL */
     .subscription-offer-card .offer-original {
         text-align: right !important;
+    }
+
+    /* BOTÕES DE ASSINATURA */
+    .promotions-header h4 {
+        font-size: 22px !important;
+        font-weight: 600 !important;
+    }
+
+    .promotions .subscription-button {
+        background: linear-gradient(
+            90deg,
+            #f9a24a 0%,
+            #f5a0a0 100%
+        ) !important;
+        background-image: linear-gradient(
+            90deg,
+            #f9a24a 0%,
+            #f5a0a0 100%
+        ) !important;
+        color: #000 !important;
+        border-radius: 30px !important;
+        min-height: 58px !important;
+        height: 58px !important;
     }
 }
   </style>
