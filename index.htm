@@ -2311,11 +2311,56 @@ Bem vindo(a) meus amores 🥰
         <div id="syncpayFormView">
           <h3>Finalizar assinatura</h3>
           <p id="syncpayPlanText">Clique abaixo para gerar o PIX.</p>
-          <form id="syncpayForm">
-            
-            <div class="syncpay-error" id="syncpayError"></div>
-            <button class="syncpay-action" type="submit" id="syncpaySubmit">Gerar PIX</button>
-          </form>
+         <form id="syncpayForm">
+
+  <input
+    class="syncpay-field"
+    type="text"
+    name="name"
+    placeholder="Nome completo"
+    autocomplete="name"
+    required
+  >
+
+  <input
+    class="syncpay-field"
+    type="email"
+    name="email"
+    placeholder="E-mail"
+    autocomplete="email"
+    required
+  >
+
+  <input
+    class="syncpay-field"
+    type="text"
+    name="cpf"
+    placeholder="CPF"
+    inputmode="numeric"
+    maxlength="14"
+    required
+  >
+
+  <input
+    class="syncpay-field"
+    type="tel"
+    name="phone"
+    placeholder="Telefone"
+    autocomplete="tel"
+    required
+  >
+
+  <div class="syncpay-error" id="syncpayError"></div>
+
+  <button
+    class="syncpay-action"
+    type="submit"
+    id="syncpaySubmit"
+  >
+    Gerar PIX
+  </button>
+
+</form>
         </div>
         <div class="syncpay-pix" id="syncpayPixView">
           <h3>PIX gerado</h3>
