@@ -2584,7 +2584,17 @@ Bem vindo(a) meus amores 🥰
             amountText.textContent = `${result.label} — R$ ${Number(result.amount).toFixed(2).replace('.', ',')}`;
             formView.style.display = 'none';
             pixView.style.display = 'block';
-            if (window.QRCode) QRCode.toCanvas(qr, result.pix_code, { width: 230, margin: 1 });
+         if (result.pix_image) {
+  const img = document.createElement('img');
+  img.src = result.pix_image;
+  img.alt = 'QR Code PIX';
+  img.style.width = '230px';
+  img.style.height = '230px';
+  img.style.display = 'block';
+  img.style.margin = '10px auto';
+
+  qr.replaceWith(img);
+}
             status.textContent = 'Aguardando confirmação do pagamento…';
             pollTimer = setInterval(async () => {
               try {
