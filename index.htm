@@ -2584,16 +2584,15 @@ Bem vindo(a) meus amores 🥰
             amountText.textContent = `${result.label} — R$ ${Number(result.amount).toFixed(2).replace('.', ',')}`;
             formView.style.display = 'none';
             pixView.style.display = 'block';
-         if (result.pix_image) {
-  const img = document.createElement('img');
-  img.src = result.pix_image;
-  img.alt = 'QR Code PIX';
-  img.style.width = '230px';
-  img.style.height = '230px';
-  img.style.display = 'block';
-  img.style.margin = '10px auto';
+       if (result.pix_code) {
+    const qr = document.getElementById('syncpayQr');
 
-  qr.replaceWith(img);
+    if (qr && typeof QRCode !== 'undefined') {
+        QRCode.toCanvas(qr, result.pix_code, {
+            width: 230,
+            margin: 2
+        });
+    }
 }
             status.textContent = 'Aguardando confirmação do pagamento…';
             pollTimer = setInterval(async () => {
