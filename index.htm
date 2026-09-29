@@ -1646,16 +1646,22 @@ button.subscription-button,
     fill: none !important;
     stroke: #354158 !important;
     stroke-width: 1.5 !important;
-}/* ===== REMOVE O FLASH DOS ÍCONES NO PC ===== */
+}
+}/* ===== CORREÇÃO DO FLASH DOS ÍCONES NO PC ===== */
 @media (min-width: 769px) {
   .banner-stats {
-    visibility: hidden !important;
-    animation: mostrarBannerStats 0s 0.1s forwards !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    animation: mostrarStatsPC 0.01s 0.3s forwards !important;
   }
 
-  @keyframes mostrarBannerStats {
+  @keyframes mostrarStatsPC {
+    from {
+      opacity: 0 !important;
+    }
+
     to {
-      visibility: visible;
+      opacity: 1 !important;
     }
   }
 }
