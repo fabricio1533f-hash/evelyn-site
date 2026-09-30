@@ -19,9 +19,9 @@ const SITE_DIR = __dirname;
 const ORDERS_FILE = path.join(__dirname, 'data', 'orders.json');
 
 const PLANS = {
-  '30-dias': { amount: 11.90, label: '30 DIAS' },
-  '3-meses': { amount: 18.90, label: '3 MESES' },
-  '1-ano': { amount: 49.90, label: '1 ANO' },
+  '30-dias': { amount: 20.90, label: '30 DIAS' },
+  '3-meses': { amount: 39.90, label: '3 MESES' },
+  '1-ano': { amount: 69.90, label: '1 ANO' },
 };
 
 
