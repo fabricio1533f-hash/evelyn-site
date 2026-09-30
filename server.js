@@ -958,8 +958,8 @@ const server = http.createServer(
       res
     ) => {
   if (req.method === 'GET' && new URL(req.url, 'http://localhost').pathname === '/admin') {
-    return sendAdminPage(res);
-  }
+  return serveStatic(req, res, '/admin.html');
+}
 
 
       try {
