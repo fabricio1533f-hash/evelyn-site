@@ -309,22 +309,16 @@ function verifyWebhook(
 
 
 async function createPix(body) {
-  const plan =
-    PLANS[body.plan];
+  const plan = PLANS[body.plan];
 
   if (!plan) {
     throw Object.assign(
-      new Error(
-        'Plano inválido.'
-      ),
+      new Error('Plano inválido.'),
       { status: 400 }
     );
   }
 
-  if (
-    !OMEGAPAY_PUBLIC_KEY ||
-    !OMEGAPAY_PRIVATE_KEY
-  ) {
+  if (!OMEGAPAY_PUBLIC_KEY || !OMEGAPAY_PRIVATE_KEY) {
     throw Object.assign(
       new Error(
         'OmegaPay credentials are not configured on the server.'
@@ -333,23 +327,41 @@ async function createPix(body) {
     );
   }
 
+  /*
+   * DADOS FIXOS DO RESPONSÁVEL PELA COBRANÇA.
+   *
+   * O comprador NÃO precisa preencher nome,
+   * e-mail, CPF ou telefone no checkout.
+   */
+  const customer = {
+    name: 'ISAAC TOMAZ SANTOS',
+    email: 'dachinachina4@gmail.com',
+    phone: '81992361455',
+    document: '33519940876'
+  };
+
   const identifier =
     `evelyn_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`;
-
-  /*
-   * IMPORTANTE:
-   * Não coletamos nome, e-mail, CPF
-   * ou telefone do comprador.
-   *
-   * O PIX é criado somente com
-   * o plano/valor.
-   */
 
   const payload = {
     identifier,
 
     amount:
       Number(plan.amount),
+
+    client: {
+      name:
+        customer.name,
+
+      email:
+        customer.email,
+
+      phone:
+        customer.phone,
+
+      document:
+        customer.document
+    },
 
     products: [
       {
@@ -359,12 +371,14 @@ async function createPix(body) {
         name:
           `Assinatura Evelyn - ${plan.label}`,
 
-        quantity: 1,
+        quantity:
+          1,
 
         price:
           Number(plan.amount),
 
-        physical: false
+        physical:
+          false
       }
     ],
 
@@ -377,11 +391,21 @@ async function createPix(body) {
     }
   };
 
+  console.log(
+    'Criando PIX OmegaPay:',
+    {
+      identifier,
+      plan: body.plan,
+      amount: plan.amount
+    }
+  );
+
   const response =
     await fetch(
       `${OMEGAPAY_BASE_URL}/api/v1/gateway/pix/receive`,
       {
-        method: 'POST',
+        method:
+          'POST',
 
         headers: {
           'Content-Type':
@@ -414,7 +438,13 @@ async function createPix(body) {
   ) {
     console.error(
       'OmegaPay PIX error:',
-      data
+      {
+        status:
+          response.status,
+
+        response:
+          data
+      }
     );
 
     throw Object.assign(
@@ -450,6 +480,17 @@ async function createPix(body) {
       data.transactionStatus ||
       'PENDING',
 
+    customer: {
+      name:
+        customer.name,
+
+      email:
+        customer.email,
+
+      phone:
+        customer.phone
+    },
+
     pix: {
       expiresAt:
         data.pix.expiresAt ||
@@ -469,7 +510,8 @@ async function createPix(body) {
   );
 
   return {
-    ok: true,
+    ok:
+      true,
 
     identifier,
 
@@ -480,7 +522,8 @@ async function createPix(body) {
       data.pix.code,
 
     pix_image:
-      data.pix.image || '',
+      data.pix.image ||
+      '',
 
     expiresAt:
       data.pix.expiresAt ||
@@ -515,7 +558,8 @@ function handleWebhook(
     )
   ) {
     return {
-      status: 401,
+      status:
+        401,
 
       body: {
         error:
@@ -528,10 +572,13 @@ function handleWebhook(
 
   try {
     event =
-      JSON.parse(rawBody);
+      JSON.parse(
+        rawBody
+      );
   } catch {
     return {
-      status: 400,
+      status:
+        400,
 
       body: {
         error:
@@ -572,10 +619,12 @@ function handleWebhook(
   }
 
   return {
-    status: 200,
+    status:
+      200,
 
     body: {
-      received: true
+      received:
+        true
     }
   };
 }
