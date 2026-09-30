@@ -902,12 +902,66 @@ function serveStatic(
 }
 
 
+
+function sendAdminPage(res) {
+  const html = '<!DOCTYPE html>' +
+  '<html lang="pt-BR"><head><meta charset="UTF-8">' +
+  '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+  '<title>Painel de Visitas</title>' +
+  '<style>' +
+  'body{font-family:Arial;background:#f6f7fb;padding:30px;color:#172033}' +
+  '.grid{display:flex;gap:15px;flex-wrap:wrap}' +
+  '.card{background:white;padding:25px;border-radius:15px;min-width:170px;box-shadow:0 4px 15px #ddd}' +
+  '.label{color:#687386}.value{font-size:32px;font-weight:bold}' +
+  '.box{background:white;padding:25px;margin-top:25px;border-radius:15px;overflow:auto}' +
+  'table{width:100%;border-collapse:collapse}th,td{padding:12px;border-bottom:1px solid #eee;text-align:left}' +
+  '</style></head><body>' +
+  '<h1>📊 Painel de Visitas</h1>' +
+  '<div class="grid">' +
+  '<div class="card"><div class="label">Visitantes hoje</div><div class="value" id="today">0</div></div>' +
+  '<div class="card"><div class="label">Últimos 5 minutos</div><div class="value" id="now">0</div></div>' +
+  '<div class="card"><div class="label">Celular</div><div class="value" id="mobile">0</div></div>' +
+  '<div class="card"><div class="label">PC</div><div class="value" id="pc">0</div></div>' +
+  '<div class="card"><div class="label">Tablet</div><div class="value" id="tablet">0</div></div>' +
+  '</div>' +
+  '<div class="box"><h2>Acessos recentes</h2>' +
+  '<table><thead><tr><th>Horário</th><th>Dispositivo</th><th>Navegador</th><th>País</th><th>Página</th></tr></thead>' +
+  '<tbody id="rows"><tr><td colspan="5">Carregando...</td></tr></tbody></table></div>' +
+  '<script>' +
+  'async function carregar(){' +
+  'try{' +
+  'const r=await fetch("/api/visitas",{cache:"no-store"});' +
+  'const d=await r.json();' +
+  'document.getElementById("today").textContent=d.today||0;' +
+  'document.getElementById("now").textContent=d.visitorsNow||0;' +
+  'document.getElementById("mobile").textContent=d.devices?.Celular||0;' +
+  'document.getElementById("pc").textContent=d.devices?.PC||0;' +
+  'document.getElementById("tablet").textContent=d.devices?.Tablet||0;' +
+  'const lista=d.recent||[];' +
+  'document.getElementById("rows").innerHTML=lista.length?lista.map(v=>"<tr><td>"+new Date(v.at).toLocaleString("pt-BR")+"</td><td>"+(v.device||"-")+"</td><td>"+(v.browser||"-")+"</td><td>"+(v.country||"-")+"</td><td>"+(v.path||"-")+"</td></tr>").join(""):"<tr><td colspan=\"5\">Nenhum acesso ainda.</td></tr>";' +
+  '}catch(e){console.log(e)}}' +
+  'carregar();setInterval(carregar,30000);' +
+  '</script></body></html>';
+
+  res.writeHead(200, {
+    'Content-Type': 'text/html; charset=utf-8',
+    'Cache-Control': 'no-store'
+  });
+
+  res.end(html);
+}
+
 const server =
   http.createServer(
     async (
       req,
       res
     ) => {
+  if (req.method === 'GET' && new URL(req.url, 'http://localhost').pathname === '/admin') {
+    return sendAdminPage(res);
+  }
+
+
       try {
         const url =
           new URL(
