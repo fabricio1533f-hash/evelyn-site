@@ -234,17 +234,14 @@ async function createPix(body) {
     }
   };
 
-  const requestUrl = `${OMEGAPAY_BASE_URL}/gateway/pix/receive`;
-
   const response = await fetch(
-    requestUrl,
+  `${OMEGAPAY_BASE_URL}/gateway/pix/receive`
     {
       method: 'POST',
 
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'User-Agent': 'EvelynCheckout/1.0 (+Render)',
         'x-public-key': OMEGAPAY_PUBLIC_KEY,
         'x-secret-key': OMEGAPAY_PRIVATE_KEY
       },
@@ -253,27 +250,14 @@ async function createPix(body) {
     }
   );
 
-  const rawText = await response.text().catch(() => '');
-  let data = {};
-  try {
-    data = rawText ? JSON.parse(rawText) : {};
-  } catch {
-    data = {};
-  }
+  const data = await response.json().catch(() => ({}));
 
   if (
     !response.ok ||
     !data.transactionId ||
     !data.pix?.code
   ) {
-    console.error('OmegaPay PIX error:', {
-      url: requestUrl,
-      status: response.status,
-      statusText: response.statusText,
-      contentType: response.headers.get('content-type'),
-      rawBody: rawText.slice(0, 3000),
-      parsedJson: data,
-    });
+    console.error('OmegaPay PIX error:', data);
 
     throw Object.assign(
       new Error(
