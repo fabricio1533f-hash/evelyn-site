@@ -1,1 +1,497 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <title>Painel de Visitas</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f8f5f1;
+      color: #202020;
+    }
+
+    .header {
+      background: linear-gradient(90deg, #f9a24a 0%, #f5a0a0 100%);
+      padding: 28px 22px;
+      color: white;
+    }
+
+    .header-inner {
+      max-width: 1250px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    .title p {
+      margin: 7px 0 0;
+      font-size: 14px;
+      opacity: .9;
+    }
+
+    .live {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.25);
+      padding: 10px 14px;
+      border-radius: 30px;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .live-dot {
+      width: 9px;
+      height: 9px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(255,255,255,.9);
+    }
+
+    .container {
+      max-width: 1250px;
+      margin: 28px auto;
+      padding: 0 18px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #eee7e0;
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 6px 22px rgba(0,0,0,.06);
+    }
+
+    .card-label {
+      color: #777;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .4px;
+      margin-bottom: 10px;
+    }
+
+    .card-value {
+      font-size: 34px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .card-sub {
+      margin-top: 9px;
+      color: #aaa;
+      font-size: 12px;
+    }
+
+    .main-box {
+      background: #fff;
+      border: 1px solid #eee7e0;
+      border-radius: 20px;
+      margin-top: 24px;
+      overflow: hidden;
+      box-shadow: 0 6px 22px rgba(0,0,0,.06);
+    }
+
+    .box-header {
+      padding: 21px 24px;
+      border-bottom: 1px solid #eee7e0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .box-header h2 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .updated {
+      margin-top: 5px;
+      color: #999;
+      font-size: 12px;
+    }
+
+    .refresh {
+      border: 0;
+      background: linear-gradient(90deg, #f9a24a 0%, #f5a0a0 100%);
+      color: white;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .refresh:active {
+      transform: scale(.98);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 720px;
+      border-collapse: collapse;
+    }
+
+    th {
+      padding: 14px 20px;
+      text-align: left;
+      background: #faf8f5;
+      color: #777;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+
+    td {
+      padding: 15px 20px;
+      border-top: 1px solid #f0ece8;
+      font-size: 13px;
+    }
+
+    tr:hover td {
+      background: #fffaf6;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 20px;
+      background: #f7f1eb;
+      color: #555;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .country {
+      font-weight: 700;
+    }
+
+    .path {
+      color: #999;
+      max-width: 280px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: block;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 45px 20px;
+      color: #999;
+    }
+
+    .error {
+      text-align: center;
+      padding: 35px 20px;
+      color: #b44;
+      background: #fff5f5;
+    }
+
+    .footer {
+      text-align: center;
+      color: #aaa;
+      font-size: 11px;
+      padding: 25px;
+    }
+
+    @media (max-width: 1000px) {
+      .cards {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 650px) {
+      .header-inner {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .title h1 {
+        font-size: 23px;
+      }
+
+      .cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .card {
+        padding: 17px;
+      }
+
+      .card-value {
+        font-size: 27px;
+      }
+
+      .box-header {
+        padding: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="header">
+    <div class="header-inner">
+
+      <div class="title">
+        <h1>📊 Painel de Visitas</h1>
+        <p>Acompanhe os acessos ao seu site.</p>
+      </div>
+
+      <div class="live">
+        <span class="live-dot"></span>
+        Atualização automática
+      </div>
+
+    </div>
+  </header>
+
+  <main class="container">
+
+    <section class="cards">
+
+      <div class="card">
+        <div class="card-label">VISITANTES HOJE</div>
+        <div class="card-value" id="today">0</div>
+        <div class="card-sub">Acessos registrados hoje</div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">ONLINE AGORA</div>
+        <div class="card-value" id="now">0</div>
+        <div class="card-sub">Últimos 5 minutos</div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">CELULAR</div>
+        <div class="card-value" id="mobile">0</div>
+        <div class="card-sub">Acessos de smartphones</div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">PC</div>
+        <div class="card-value" id="pc">0</div>
+        <div class="card-sub">Acessos de computadores</div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">TABLET</div>
+        <div class="card-value" id="tablet">0</div>
+        <div class="card-sub">Acessos de tablets</div>
+      </div>
+
+    </section>
+
+    <section class="main-box">
+
+      <div class="box-header">
+
+        <div>
+          <h2>Acessos recentes</h2>
+          <div class="updated" id="updated">
+            Carregando informações...
+          </div>
+        </div>
+
+        <button class="refresh" onclick="carregar()">
+          ↻ Atualizar
+        </button>
+
+      </div>
+
+      <div class="table-wrap">
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>Horário</th>
+              <th>Dispositivo</th>
+              <th>Navegador</th>
+              <th>País</th>
+              <th>Página</th>
+            </tr>
+          </thead>
+
+          <tbody id="rows">
+
+            <tr>
+              <td colspan="5" class="empty">
+                Carregando acessos...
+              </td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <div class="footer">
+    Painel administrativo • Atualização automática a cada 30 segundos
+  </div>
+
+  <script>
+
+    function escapar(texto) {
+      return String(texto ?? '-')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    async function carregar() {
+
+      const updated = document.getElementById('updated');
+
+      try {
+
+        updated.textContent = 'Atualizando...';
+
+        const resposta = await fetch('/api/visitas', {
+          cache: 'no-store'
+        });
+
+        if (!resposta.ok) {
+          throw new Error('Erro ao carregar API');
+        }
+
+        const dados = await resposta.json();
+
+        document.getElementById('today').textContent =
+          dados.today || 0;
+
+        document.getElementById('now').textContent =
+          dados.visitorsNow || 0;
+
+        document.getElementById('mobile').textContent =
+          dados.devices?.Celular || 0;
+
+        document.getElementById('pc').textContent =
+          dados.devices?.PC || 0;
+
+        document.getElementById('tablet').textContent =
+          dados.devices?.Tablet || 0;
+
+        const lista = dados.recent || [];
+        const rows = document.getElementById('rows');
+
+        if (!lista.length) {
+
+          rows.innerHTML =
+            '<tr>' +
+            '<td colspan="5" class="empty">' +
+            'Nenhum acesso registrado ainda.' +
+            '</td>' +
+            '</tr>';
+
+        } else {
+
+          rows.innerHTML = lista.map(function(v) {
+
+            const horario =
+              v.at
+                ? new Date(v.at).toLocaleString('pt-BR')
+                : '-';
+
+            return '<tr>' +
+
+              '<td>' +
+              escapar(horario) +
+              '</td>' +
+
+              '<td>' +
+              '<span class="badge">' +
+              escapar(v.device) +
+              '</span>' +
+              '</td>' +
+
+              '<td>' +
+              '<span class="badge">' +
+              escapar(v.browser) +
+              '</span>' +
+              '</td>' +
+
+              '<td>' +
+              '<span class="country">' +
+              escapar(v.country || '-') +
+              '</span>' +
+              '</td>' +
+
+              '<td>' +
+              '<span class="path">' +
+              escapar(v.path) +
+              '</span>' +
+              '</td>' +
+
+              '</tr>';
+
+          }).join('');
+
+        }
+
+        updated.textContent =
+          'Última atualização: ' +
+          new Date().toLocaleTimeString('pt-BR');
+
+      } catch (erro) {
+
+        console.error(erro);
+
+        document.getElementById('rows').innerHTML =
+          '<tr>' +
+          '<td colspan="5" class="error">' +
+          'Não foi possível carregar os acessos.' +
+          '</td>' +
+          '</tr>';
+
+        updated.textContent =
+          'Erro ao atualizar';
+
+      }
+
+    }
+
+    carregar();
+
+    setInterval(carregar, 30000);
+
+  </script>
+
+</body>
+</html>
