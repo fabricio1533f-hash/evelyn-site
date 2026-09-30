@@ -1100,10 +1100,11 @@ const server = http.createServer(
           req.method ===
           'GET'
         ) {
-          recordVisit(
-            req,
-            url.pathname
-          );
+          const accept = req.headers.accept || '';
+
+if (accept.includes('text/html')) {
+  recordVisit(req, url.pathname);
+}
 
           return serveStatic(
             req,
