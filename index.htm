@@ -2488,378 +2488,158 @@ Bem vindo(a) meus amores 🥰
 
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
     <script>
-     <script>
+   <script>
 (() => {
-  const modal =
-    document.getElementById('syncpayModal');
+  const modal = document.getElementById('syncpayModal');
+  const formView = document.getElementById('syncpayFormView');
+  const pixView = document.getElementById('syncpayPixView');
+  const error = document.getElementById('syncpayError');
+  const planText = document.getElementById('syncpayPlanText');
+  const amountText = document.getElementById('syncpayAmountText');
+  const code = document.getElementById('syncpayCode');
+  const status = document.getElementById('syncpayStatus');
+  const qr = document.getElementById('syncpayQr');
+  const closeButton = document.getElementById('syncpayClose');
 
-  const formView =
-    document.getElementById('syncpayFormView');
-
-  const pixView =
-    document.getElementById('syncpayPixView');
-
-  const error =
-    document.getElementById('syncpayError');
-
-  const submit =
-    document.getElementById('syncpaySubmit');
-
-  const planText =
-    document.getElementById('syncpayPlanText');
-
-  const amountText =
-    document.getElementById('syncpayAmountText');
-
-  const code =
-    document.getElementById('syncpayCode');
-
-  const status =
-    document.getElementById('syncpayStatus');
-
-  const qr =
-    document.getElementById('syncpayQr');
+  const plans = {
+    '30-dias': { label: 'Assinar agora', amount: 20.90 },
+    '3-meses': { label: '3 meses (5% off)', amount: 39.90 },
+    '1-ano': { label: '6 meses (10% off)', amount: 69.90 }
+  };
 
   let currentPlan = null;
   let pollTimer = null;
 
-  const plans = {
-    '30-dias': {
-      label: 'Assinar agora',
-      amount: 20.90
-    },
+  async function gerarPix(planId) {
+    currentPlan = plans[planId] ? planId : '30-dias';
 
-    '3-meses': {
-      label: '3 meses (5% off)',
-      amount: 39.90
-    },
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
 
-    '1-ano': {
-      label: '6 meses (10% off)',
-      amount: 69.90
-    }
-  };
-
-
-  function openModal(planId) {
-    currentPlan =
-      plans[planId]
-        ? planId
-        : '30-dias';
-
-    const plan =
-      plans[currentPlan];
+    formView.style.display = 'none';
+    pixView.style.display = 'block';
 
     planText.textContent =
-      `${plan.label} — R$ ${plan.amount
-        .toFixed(2)
-        .replace('.', ',')}`;
+      ${plans[currentPlan].label} — R$ ${plans[currentPlan].amount.toFixed(2).replace('.', ',')};
 
-    formView.style.display =
-      'block';
-
-    pixView.style.display =
-      'none';
-
-    error.textContent =
-      '';
-
-    code.value =
-      '';
+    amountText.textContent = 'Gerando PIX...';
+    status.textContent = 'Gerando seu PIX...';
+    code.value = '';
 
     if (qr) {
-      const ctx =
-        qr.getContext('2d');
-
-      if (ctx) {
-        ctx.clearRect(
-          0,
-          0,
-          qr.width,
-          qr.height
-        );
-      }
+      const ctx = qr.getContext('2d');
+      if (ctx) ctx.clearRect(0, 0, qr.width, qr.height);
     }
-
-    modal.classList.add(
-      'open'
-    );
-
-    modal.setAttribute(
-      'aria-hidden',
-      'false'
-    );
-  }
-
-
-  function closeModal() {
-    modal.classList.remove(
-      'open'
-    );
-
-    modal.setAttribute(
-      'aria-hidden',
-      'true'
-    );
-
-    if (pollTimer) {
-      clearInterval(
-        pollTimer
-      );
-
-      pollTimer =
-        null;
-    }
-  }
-
-
-  document
-    .querySelectorAll(
-      '.subscription-link[data-plan]'
-    )
-    .forEach(link => {
-
-      link.addEventListener(
-        'click',
-        async e => {
-          e.preventDefault();
-
-          openModal(
-            link.dataset.plan
-          );
-
-          await generatePix();
-        }
-      );
-
-    });
-
-
-  document
-    .getElementById('syncpayClose')
-    .addEventListener(
-      'click',
-      closeModal
-    );
-
-
-  modal.addEventListener(
-    'click',
-    e => {
-      if (
-        e.target === modal
-      ) {
-        closeModal();
-      }
-    }
-  );
-
-
-  async function generatePix() {
-    error.textContent =
-      '';
-
-    submit.disabled =
-      true;
-
-    submit.textContent =
-      'Gerando PIX…';
 
     try {
+      const response = await fetch('/api/create-pix', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          plan: currentPlan
+        })
+      });
 
-      const response =
-        await fetch(
-          '/api/create-pix',
-          {
-            method: 'POST',
-
-            headers: {
-              'Content-Type':
-                'application/json'
-            },
-
-            body:
-              JSON.stringify({
-                plan:
-                  currentPlan
-              })
-          }
-        );
-
-
-      const result =
-        await response.json();
-
+      const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          result.error ||
-          'Não foi possível gerar o PIX.'
-        );
+        throw new Error(result.error || 'Não foi possível gerar o PIX.');
       }
 
-
-      code.value =
-        result.pix_code;
-
+      code.value = result.pix_code || '';
 
       amountText.textContent =
-        `${result.label} — R$ ${Number(
-          result.amount
-        )
-          .toFixed(2)
-          .replace('.', ',')}`;
+        ${result.label} — R$ ${Number(result.amount).toFixed(2).replace('.', ',')};
 
+      status.textContent = 'Aguardando confirmação do pagamento…';
 
-      formView.style.display =
-        'none';
-
-      pixView.style.display =
-        'block';
-
-
-      if (
-        result.pix_code &&
-        qr &&
-        typeof QRCode !==
-          'undefined'
-      ) {
-
-        QRCode.toCanvas(
-          qr,
-          result.pix_code,
-          {
-            width: 230,
-            margin: 2
-          }
-        );
-
+      if (qr && result.pix_code && typeof QRCode !== 'undefined') {
+        QRCode.toCanvas(qr, result.pix_code, {
+          width: 230,
+          margin: 2
+        });
       }
 
+      if (pollTimer) clearInterval(pollTimer);
 
-      status.textContent =
-        'Aguardando confirmação do pagamento…';
+      if (result.identifier) {
+        pollTimer = setInterval(async () => {
+          try {
+            const r = await fetch(
+              '/api/status/' + encodeURIComponent(result.identifier),
+              { cache: 'no-store' }
+            );
 
+            const st = await r.json();
 
-      if (pollTimer) {
-        clearInterval(
-          pollTimer
-        );
+            if (st.status === 'completed') {
+              status.textContent = 'Pagamento confirmado!';
+              clearInterval(pollTimer);
+            }
+          } catch (_) {}
+        }, 5000);
       }
-
-
-      pollTimer =
-        setInterval(
-          async () => {
-
-            try {
-
-              const r =
-                await fetch(
-                  '/api/status/' +
-                  encodeURIComponent(
-                    result.identifier
-                  ),
-                  {
-                    cache:
-                      'no-store'
-                  }
-                );
-
-
-              const st =
-                await r.json();
-
-
-              if (
-                st.status ===
-                  'completed' ||
-                st.status ===
-                  'paid' ||
-                st.status ===
-                  'PAID' ||
-                st.status ===
-                  'COMPLETED'
-              ) {
-
-                status.textContent =
-                  'Pagamento confirmado!';
-
-                clearInterval(
-                  pollTimer
-                );
-
-                pollTimer =
-                  null;
-              }
-
-            } catch (_) {}
-
-          },
-          5000
-        );
 
     } catch (err) {
-
-      error.textContent =
-        err.message ||
-        'Erro ao gerar o PIX.';
-
-    } finally {
-
-      submit.disabled =
-        false;
-
-      submit.textContent =
-        'Gerar PIX';
-
+      formView.style.display = 'block';
+      pixView.style.display = 'none';
+      error.textContent = err.message || 'Erro ao gerar o PIX.';
     }
   }
 
+  document.querySelectorAll('.subscription-link[data-plan]').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
 
-  submit.addEventListener(
-    'click',
-    generatePix
-  );
+      gerarPix(this.dataset.plan);
+    });
+  });
 
+  if (closeButton) {
+    closeButton.addEventListener('click', () => {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
 
-  document
-    .getElementById('syncpayCopy')
-    .addEventListener(
-      'click',
-      async () => {
-
-        try {
-
-          await navigator
-            .clipboard
-            .writeText(
-              code.value
-            );
-
-          document
-            .getElementById(
-              'syncpayCopy'
-            )
-            .textContent =
-              'PIX copiado!';
-
-        } catch {
-
-          code.select();
-
-          document.execCommand(
-            'copy'
-          );
-
-        }
-
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
       }
-    );
+    });
+  }
 
+  if (modal) {
+    modal.addEventListener('click', e => {
+      if (e.target === modal) {
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+
+        if (pollTimer) {
+          clearInterval(pollTimer);
+          pollTimer = null;
+        }
+      }
+    });
+  }
+
+  const copyButton = document.getElementById('syncpayCopy');
+
+  if (copyButton) {
+    copyButton.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(code.value);
+        copyButton.textContent = 'PIX copiado!';
+      } catch {
+        code.select();
+        document.execCommand('copy');
+        copyButton.textContent = 'PIX copiado!';
+      }
+    });
+  }
 })();
 </script>
-
         const plans = {
           '30-dias': { label: 'Assinar agora', amount: 20.90 },
           '3-meses': { label: '3 meses (5% off )', amount: 39.90 },
