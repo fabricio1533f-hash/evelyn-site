@@ -590,7 +590,7 @@ function serveStatic(
     pathname === '/'
       ? path.join(
           SITE_DIR,
-          'index.html'
+          'index.htm'
         )
       : path.join(
           SITE_DIR,
