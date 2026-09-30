@@ -940,9 +940,8 @@ function sendAdminPage(res) {
   'const lista=d.recent||[];' +
   'document.getElementById("rows").innerHTML=lista.length?lista.map(v=>"<tr><td>"+new Date(v.at).toLocaleString("pt-BR")+"</td><td>"+(v.device||"-")+"</td><td>"+(v.browser||"-")+"</td><td>"+(v.country||"-")+"</td><td>"+(v.path||"-")+"</td></tr>").join(""):"<tr><td colspan=\"5\">Nenhum acesso ainda.</td></tr>";' +
   '}catch(e){console.log(e)}}' +
-  'carregar();setInterval(carregar,30000);' +
-  '</script></body></html>';
-
+ 'carregar();setInterval(carregar,30000);' +
+'<\\/script></body></html>';
   res.writeHead(200, {
     'Content-Type': 'text/html; charset=utf-8',
     'Cache-Control': 'no-store'
