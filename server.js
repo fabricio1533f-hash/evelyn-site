@@ -19,64 +19,93 @@ const SITE_DIR = __dirname;
 const ORDERS_FILE = path.join(__dirname, 'data', 'orders.json');
 
 const PLANS = {
-  '30-dias': { amount: 20.90, label: 'Assinar agora' },
-  '3-meses': { amount: 39.90, label: '3 meses (5% off)' },
-  '1-ano': { amount: 69.90, label: '6 meses (10% off)' },
+  '30-dias': { amount: 11.90, label: '30 DIAS' },
+  '3-meses': { amount: 18.90, label: '3 MESES' },
+  '1-ano': { amount: 49.90, label: '1 ANO' },
 };
 
 
 function loadDotEnv(file) {
   if (!fs.existsSync(file)) return;
   const text = fs.readFileSync(file, 'utf8');
+
   for (const line of text.split(/\r?\n/)) {
     const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/);
     if (!m) continue;
+
     let value = m[2].trim();
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
       value = value.slice(1, -1);
     }
-    if (process.env[m[1]] === undefined) process.env[m[1]] = value;
+
+    if (process.env[m[1]] === undefined) {
+      process.env[m[1]] = value;
+    }
   }
 }
 
 function ensureDataFile() {
   fs.mkdirSync(path.dirname(ORDERS_FILE), { recursive: true });
-  if (!fs.existsSync(ORDERS_FILE)) fs.writeFileSync(ORDERS_FILE, '{}');
+
+  if (!fs.existsSync(ORDERS_FILE)) {
+    fs.writeFileSync(ORDERS_FILE, '{}');
+  }
 }
 
 function readOrders() {
   ensureDataFile();
-  try { return JSON.parse(fs.readFileSync(ORDERS_FILE, 'utf8') || '{}'); }
-  catch { return {}; }
+
+  try {
+    return JSON.parse(
+      fs.readFileSync(ORDERS_FILE, 'utf8') || '{}'
+    );
+  } catch {
+    return {};
+  }
 }
 
 function writeOrders(orders) {
   ensureDataFile();
+
   const tmp = `${ORDERS_FILE}.tmp`;
-  fs.writeFileSync(tmp, JSON.stringify(orders, null, 2));
+
+  fs.writeFileSync(
+    tmp,
+    JSON.stringify(orders, null, 2)
+  );
+
   fs.renameSync(tmp, ORDERS_FILE);
 }
 
 function sendJson(res, status, body) {
   const payload = JSON.stringify(body);
+
   res.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'no-store',
     'Access-Control-Allow-Origin': '*',
   });
+
   res.end(payload);
 }
 
 function readBody(req, maxBytes = 100_000) {
   return new Promise((resolve, reject) => {
     let body = '';
+
     req.on('data', chunk => {
       body += chunk;
+
       if (Buffer.byteLength(body) > maxBytes) {
         req.destroy();
         reject(new Error('Payload too large'));
       }
     });
+
     req.on('end', () => resolve(body));
     req.on('error', reject);
   });
@@ -84,34 +113,63 @@ function readBody(req, maxBytes = 100_000) {
 
 function validCpf(value) {
   const cpf = String(value || '').replace(/\D/g, '');
-  if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+
+  if (
+    cpf.length !== 11 ||
+    /^(\d)\1+$/.test(cpf)
+  ) {
+    return false;
+  }
 
   let sum = 0;
+
   for (let i = 0; i < 9; i++) {
     sum += Number(cpf[i]) * (10 - i);
   }
 
   let d1 = (sum * 10) % 11;
-  if (d1 === 10) d1 = 0;
-  if (d1 !== Number(cpf[9])) return false;
+
+  if (d1 === 10) {
+    d1 = 0;
+  }
+
+  if (d1 !== Number(cpf[9])) {
+    return false;
+  }
 
   sum = 0;
+
   for (let i = 0; i < 10; i++) {
     sum += Number(cpf[i]) * (11 - i);
   }
 
   let d2 = (sum * 10) % 11;
-  if (d2 === 10) d2 = 0;
+
+  if (d2 === 10) {
+    d2 = 0;
+  }
 
   return d2 === Number(cpf[10]);
 }
 
 function normalizeCustomer(input) {
   return {
-    name: String(input?.name || '').trim().slice(0, 120),
-    email: String(input?.email || '').trim().toLowerCase().slice(0, 180),
-    cpf: String(input?.cpf || '').replace(/\D/g, '').slice(0, 11),
-    phone: String(input?.phone || '').replace(/\D/g, '').slice(0, 20),
+    name: String(input?.name || '')
+      .trim()
+      .slice(0, 120),
+
+    email: String(input?.email || '')
+      .trim()
+      .toLowerCase()
+      .slice(0, 180),
+
+    cpf: String(input?.cpf || '')
+      .replace(/\D/g, '')
+      .slice(0, 11),
+
+    phone: String(input?.phone || '')
+      .replace(/\D/g, '')
+      .slice(0, 20),
   };
 }
 
@@ -119,30 +177,52 @@ function safeEqualHex(expected, actual) {
   try {
     const a = Buffer.from(expected, 'utf8');
     const b = Buffer.from(actual, 'utf8');
-    return a.length === b.length && crypto.timingSafeEqual(a, b);
+
+    return (
+      a.length === b.length &&
+      crypto.timingSafeEqual(a, b)
+    );
   } catch {
     return false;
   }
 }
 
 function verifyWebhook(signature, rawBody) {
-  const secrets = [WEBHOOK_SECRET, WEBHOOK_SECRET_OLD].filter(Boolean);
+  const secrets = [
+    WEBHOOK_SECRET,
+    WEBHOOK_SECRET_OLD
+  ].filter(Boolean);
 
-  if (!signature || secrets.length === 0) return false;
+  if (!signature || secrets.length === 0) {
+    return false;
+  }
 
   const parts = Object.fromEntries(
-    String(signature).split(',').map(p => {
-      const [k, ...rest] = p.split('=');
-      return [k?.trim(), rest.join('=').trim()];
-    })
+    String(signature)
+      .split(',')
+      .map(p => {
+        const [k, ...rest] = p.split('=');
+
+        return [
+          k?.trim(),
+          rest.join('=').trim()
+        ];
+      })
   );
 
   const timestamp = Number(parts.t || 0);
   const received = parts.v1 || '';
 
-  if (!timestamp || !received) return false;
+  if (!timestamp || !received) {
+    return false;
+  }
 
-  if (Math.abs(Math.floor(Date.now() / 1000) - timestamp) > 300) {
+  if (
+    Math.abs(
+      Math.floor(Date.now() / 1000) -
+      timestamp
+    ) > 300
+  ) {
     return false;
   }
 
@@ -152,7 +232,10 @@ function verifyWebhook(signature, rawBody) {
       .update(`${timestamp}.${rawBody}`)
       .digest('hex');
 
-    return safeEqualHex(expected, received);
+    return safeEqualHex(
+      expected,
+      received
+    );
   });
 }
 
@@ -166,14 +249,21 @@ async function createPix(body) {
     );
   }
 
-  if (!OMEGAPAY_PUBLIC_KEY || !OMEGAPAY_PRIVATE_KEY) {
+  if (
+    !OMEGAPAY_PUBLIC_KEY ||
+    !OMEGAPAY_PRIVATE_KEY
+  ) {
     throw Object.assign(
-      new Error('OmegaPay credentials are not configured on the server.'),
+      new Error(
+        'OmegaPay credentials are not configured on the server.'
+      ),
       { status: 500 }
     );
   }
 
-  const customer = normalizeCustomer(body.customer);
+  const customer = normalizeCustomer(
+    body.customer
+  );
 
   if (customer.name.length < 2) {
     throw Object.assign(
@@ -182,23 +272,33 @@ async function createPix(body) {
     );
   }
 
-  if (!/^\S+@\S+\.\S+$/.test(customer.email)) {
+  if (
+    !/^\S+@\S+\.\S+$/.test(
+      customer.email
+    )
+  ) {
     throw Object.assign(
-      new Error('Informe um e-mail válido.'),
+      new Error(
+        'Informe um e-mail válido.'
+      ),
       { status: 422 }
     );
   }
 
   if (!validCpf(customer.cpf)) {
     throw Object.assign(
-      new Error('Informe um CPF válido.'),
+      new Error(
+        'Informe um CPF válido.'
+      ),
       { status: 422 }
     );
   }
 
   if (customer.phone.length < 10) {
     throw Object.assign(
-      new Error('Informe um telefone válido.'),
+      new Error(
+        'Informe um telefone válido.'
+      ),
       { status: 422 }
     );
   }
@@ -235,7 +335,7 @@ async function createPix(body) {
   };
 
   const response = await fetch(
-  `${OMEGAPAY_BASE_URL}/gateway/pix/receive`
+    `${OMEGAPAY_BASE_URL}/api/v1/gateway/pix/receive`,
     {
       method: 'POST',
 
@@ -250,14 +350,19 @@ async function createPix(body) {
     }
   );
 
-  const data = await response.json().catch(() => ({}));
+  const data = await response
+    .json()
+    .catch(() => ({}));
 
   if (
     !response.ok ||
     !data.transactionId ||
     !data.pix?.code
   ) {
-    console.error('OmegaPay PIX error:', data);
+    console.error(
+      'OmegaPay PIX error:',
+      data
+    );
 
     throw Object.assign(
       new Error(
@@ -267,7 +372,8 @@ async function createPix(body) {
         `OmegaPay PIX failed (${response.status})`
       ),
       {
-        status: response.status || 502
+        status:
+          response.status || 502
       }
     );
   }
@@ -277,13 +383,16 @@ async function createPix(body) {
   orders[identifier] = {
     identifier,
 
-    transactionId: data.transactionId,
+    transactionId:
+      data.transactionId,
 
     plan: body.plan,
 
     amount: plan.amount,
 
-    status: data.transactionStatus || 'PENDING',
+    status:
+      data.transactionStatus ||
+      'PENDING',
 
     customer: {
       name: customer.name,
@@ -292,12 +401,17 @@ async function createPix(body) {
     },
 
     pix: {
-      expiresAt: data.pix.expiresAt || null
+      expiresAt:
+        data.pix.expiresAt ||
+        null
     },
 
-    webhookToken: data.webhookToken || null,
+    webhookToken:
+      data.webhookToken ||
+      null,
 
-    createdAt: new Date().toISOString()
+    createdAt:
+      new Date().toISOString()
   };
 
   writeOrders(orders);
@@ -307,21 +421,30 @@ async function createPix(body) {
 
     identifier,
 
-    transactionId: data.transactionId,
+    transactionId:
+      data.transactionId,
 
-    pix_code: data.pix.code,
+    pix_code:
+      data.pix.code,
 
-    pix_image: data.pix.image || '',
+    pix_image:
+      data.pix.image || '',
 
-    expiresAt: data.pix.expiresAt || null,
+    expiresAt:
+      data.pix.expiresAt || null,
 
-    amount: plan.amount,
+    amount:
+      plan.amount,
 
-    label: plan.label,
+    label:
+      plan.label,
 
-    status: data.status,
+    status:
+      data.status,
 
-    transactionStatus: data.transactionStatus || null
+    transactionStatus:
+      data.transactionStatus ||
+      null
   };
 }
 
@@ -334,8 +457,10 @@ function handleWebhook(rawBody, req) {
   ) {
     return {
       status: 401,
+
       body: {
-        error: 'invalid_signature'
+        error:
+          'invalid_signature'
       }
     };
   }
@@ -347,13 +472,16 @@ function handleWebhook(rawBody, req) {
   } catch {
     return {
       status: 400,
+
       body: {
-        error: 'invalid_json'
+        error:
+          'invalid_json'
       }
     };
   }
 
-  const tx = event.transaction || {};
+  const tx =
+    event.transaction || {};
 
   const identifier =
     tx.reference_id ||
@@ -361,7 +489,8 @@ function handleWebhook(rawBody, req) {
     event.id;
 
   if (identifier) {
-    const orders = readOrders();
+    const orders =
+      readOrders();
 
     if (orders[identifier]) {
       orders[identifier].status =
@@ -382,29 +511,46 @@ function handleWebhook(rawBody, req) {
 
   return {
     status: 200,
+
     body: {
       received: true
     }
   };
 }
 
-function serveStatic(req, res, pathname) {
+function serveStatic(
+  req,
+  res,
+  pathname
+) {
   let filePath =
     pathname === '/'
-      ? path.join(SITE_DIR, 'index.htm')
+      ? path.join(
+          SITE_DIR,
+          'index.htm'
+        )
       : path.join(
           SITE_DIR,
-          pathname.replace(/^\//, '')
+          pathname.replace(
+            /^\//,
+            ''
+          )
         );
 
-  filePath = path.normalize(filePath);
+  filePath =
+    path.normalize(filePath);
 
-  if (!filePath.startsWith(SITE_DIR)) {
+  if (
+    !filePath.startsWith(
+      SITE_DIR
+    )
+  ) {
     return sendJson(
       res,
       403,
       {
-        error: 'forbidden'
+        error:
+          'forbidden'
       }
     );
   }
@@ -417,27 +563,53 @@ function serveStatic(req, res, pathname) {
       res,
       404,
       {
-        error: 'not_found'
+        error:
+          'not_found'
       }
     );
   }
 
   const ext =
-    path.extname(filePath).toLowerCase();
+    path.extname(
+      filePath
+    ).toLowerCase();
 
   const types = {
-    '.htm': 'text/html; charset=utf-8',
-    '.html': 'text/html; charset=utf-8',
-    '.css': 'text/css; charset=utf-8',
-    '.js': 'application/javascript; charset=utf-8',
-    '.json': 'application/json; charset=utf-8',
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.png': 'image/png',
-    '.webp': 'image/webp',
-    '.mp4': 'video/mp4',
-    '.svg': 'image/svg+xml',
-    '.ico': 'image/x-icon'
+    '.htm':
+      'text/html; charset=utf-8',
+
+    '.html':
+      'text/html; charset=utf-8',
+
+    '.css':
+      'text/css; charset=utf-8',
+
+    '.js':
+      'application/javascript; charset=utf-8',
+
+    '.json':
+      'application/json; charset=utf-8',
+
+    '.jpg':
+      'image/jpeg',
+
+    '.jpeg':
+      'image/jpeg',
+
+    '.png':
+      'image/png',
+
+    '.webp':
+      'image/webp',
+
+    '.mp4':
+      'video/mp4',
+
+    '.svg':
+      'image/svg+xml',
+
+    '.ico':
+      'image/x-icon'
   };
 
   res.writeHead(
@@ -449,133 +621,164 @@ function serveStatic(req, res, pathname) {
     }
   );
 
-  fs.createReadStream(filePath).pipe(res);
+  fs.createReadStream(
+    filePath
+  ).pipe(res);
 }
 
-const server = http.createServer(
-  async (req, res) => {
-    try {
-      const url = new URL(
-        req.url,
-        `http://${req.headers.host || 'localhost'}`
-      );
-
-      if (req.method === 'OPTIONS') {
-        res.writeHead(
-          204,
-          {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Headers':
-              'Content-Type',
-            'Access-Control-Allow-Methods':
-              'GET,POST,OPTIONS'
-          }
-        );
-
-        return res.end();
-      }
-
-      if (
-        req.method === 'POST' &&
-        url.pathname === '/api/create-pix'
-      ) {
-        const body =
-          JSON.parse(await readBody(req));
-
-        const result =
-          await createPix(body);
-
-        return sendJson(
-          res,
-          200,
-          result
-        );
-      }
-
-      if (
-        req.method === 'GET' &&
-        url.pathname.startsWith('/api/status/')
-      ) {
-        const identifier =
-          decodeURIComponent(
-            url.pathname.slice(
-              '/api/status/'.length
-            )
+const server =
+  http.createServer(
+    async (req, res) => {
+      try {
+        const url =
+          new URL(
+            req.url,
+            `http://${req.headers.host || 'localhost'}`
           );
 
-        const order =
-          readOrders()[identifier];
+        if (
+          req.method ===
+          'OPTIONS'
+        ) {
+          res.writeHead(
+            204,
+            {
+              'Access-Control-Allow-Origin':
+                '*',
 
-        if (!order) {
+              'Access-Control-Allow-Headers':
+                'Content-Type',
+
+              'Access-Control-Allow-Methods':
+                'GET,POST,OPTIONS'
+            }
+          );
+
+          return res.end();
+        }
+
+        if (
+          req.method === 'POST' &&
+          url.pathname ===
+            '/api/create-pix'
+        ) {
+          const body =
+            JSON.parse(
+              await readBody(req)
+            );
+
+          const result =
+            await createPix(
+              body
+            );
+
           return sendJson(
             res,
-            404,
+            200,
+            result
+          );
+        }
+
+        if (
+          req.method === 'GET' &&
+          url.pathname.startsWith(
+            '/api/status/'
+          )
+        ) {
+          const identifier =
+            decodeURIComponent(
+              url.pathname.slice(
+                '/api/status/'.length
+              )
+            );
+
+          const order =
+            readOrders()[
+              identifier
+            ];
+
+          if (!order) {
+            return sendJson(
+              res,
+              404,
+              {
+                error:
+                  'order_not_found'
+              }
+            );
+          }
+
+          return sendJson(
+            res,
+            200,
             {
-              error: 'order_not_found'
+              identifier,
+
+              status:
+                order.status,
+
+              paidAt:
+                order.paidAt ||
+                null
             }
           );
         }
 
+        if (
+          req.method === 'POST' &&
+          url.pathname ===
+            '/webhooks/syncpay'
+        ) {
+          const raw =
+            await readBody(req);
+
+          const result =
+            handleWebhook(
+              raw,
+              req
+            );
+
+          return sendJson(
+            res,
+            result.status,
+            result.body
+          );
+        }
+
+        if (
+          req.method === 'GET'
+        ) {
+          return serveStatic(
+            req,
+            res,
+            url.pathname
+          );
+        }
+
         return sendJson(
           res,
-          200,
+          405,
           {
-            identifier,
-            status: order.status,
-            paidAt:
-              order.paidAt || null
+            error:
+              'method_not_allowed'
+          }
+        );
+
+      } catch (error) {
+        console.error(error);
+
+        return sendJson(
+          res,
+          error.status || 500,
+          {
+            error:
+              error.message ||
+              'internal_error'
           }
         );
       }
-
-      if (
-        req.method === 'POST' &&
-        url.pathname === '/webhooks/syncpay'
-      ) {
-        const raw =
-          await readBody(req);
-
-        const result =
-          handleWebhook(raw, req);
-
-        return sendJson(
-          res,
-          result.status,
-          result.body
-        );
-      }
-
-      if (req.method === 'GET') {
-        return serveStatic(
-          req,
-          res,
-          url.pathname
-        );
-      }
-
-      return sendJson(
-        res,
-        405,
-        {
-          error: 'method_not_allowed'
-        }
-      );
-
-    } catch (error) {
-      console.error(error);
-
-      return sendJson(
-        res,
-        error.status || 500,
-        {
-          error:
-            error.message ||
-            'internal_error'
-        }
-      );
     }
-  }
-);
+  );
 
 ensureDataFile();
 
