@@ -31,6 +31,163 @@ const SITE_DIR = __dirname;
 const ORDERS_FILE =
   path.join(__dirname, 'data', 'orders.json');
 
+const VISITS_FILE =
+  path.join(__dirname, 'data', 'visits.json');
+
+function ensureVisitsFile() {
+  fs.mkdirSync(
+    path.dirname(VISITS_FILE),
+    { recursive: true }
+  );
+
+  if (!fs.existsSync(VISITS_FILE)) {
+    fs.writeFileSync(
+      VISITS_FILE,
+      '[]'
+    );
+  }
+}
+
+function readVisits() {
+  ensureVisitsFile();
+
+  try {
+    return JSON.parse(
+      fs.readFileSync(
+        VISITS_FILE,
+        'utf8'
+      ) || '[]'
+    );
+  } catch {
+    return [];
+  }
+}
+
+function writeVisits(visits) {
+  ensureVisitsFile();
+
+  const tmp =
+    `${VISITS_FILE}.tmp`;
+
+  fs.writeFileSync(
+    tmp,
+    JSON.stringify(
+      visits,
+      null,
+      2
+    )
+  );
+
+  fs.renameSync(
+    tmp,
+    VISITS_FILE
+  );
+}
+
+function visitDevice(ua) {
+  if (/tablet|ipad|android(?!.*mobile)/i.test(ua)) {
+    return 'Tablet';
+  }
+
+  if (/mobile|iphone|ipod|android/i.test(ua)) {
+    return 'Celular';
+  }
+
+  return 'PC';
+}
+
+function visitBrowser(ua) {
+  if (/edg\//i.test(ua)) return 'Edge';
+  if (/opr\//i.test(ua)) return 'Opera';
+  if (/chrome\//i.test(ua)) return 'Chrome';
+  if (/firefox\//i.test(ua)) return 'Firefox';
+  if (/safari\//i.test(ua)) return 'Safari';
+
+  return 'Outro';
+}
+
+function recordVisit(req, pathname) {
+  if (
+    pathname.startsWith('/api/') ||
+    pathname.startsWith('/webhooks/')
+  ) {
+    return;
+  }
+
+  const ua =
+    req.headers['user-agent'] || '';
+
+  const visits =
+    readVisits();
+
+  visits.push({
+    id: crypto.randomUUID(),
+    at: new Date().toISOString(),
+    path: pathname,
+    device: visitDevice(ua),
+    browser: visitBrowser(ua),
+    country:
+      req.headers['cf-ipcountry'] ||
+      req.headers['x-country-code'] ||
+      null
+  });
+
+  if (visits.length > 10000) {
+    visits.splice(
+      0,
+      visits.length - 10000
+    );
+  }
+
+  writeVisits(visits);
+}
+
+function visitStats() {
+  const visits =
+    readVisits();
+
+  const today =
+    new Date().toISOString().slice(0, 10);
+
+  const todayVisits =
+    visits.filter(
+      v => String(v.at).slice(0, 10) === today
+    );
+
+  const fiveMin =
+    Date.now() - 5 * 60 * 1000;
+
+  return {
+    today: todayVisits.length,
+
+    visitorsNow:
+      visits.filter(
+        v =>
+          new Date(v.at).getTime() >= fiveMin
+      ).length,
+
+    devices: {
+      Celular:
+        todayVisits.filter(
+          v => v.device === 'Celular'
+        ).length,
+
+      PC:
+        todayVisits.filter(
+          v => v.device === 'PC'
+        ).length,
+
+      Tablet:
+        todayVisits.filter(
+          v => v.device === 'Tablet'
+        ).length
+    },
+
+    recent:
+      visits.slice(-30).reverse()
+  };
+}
+
 const PLANS = {
   '30-dias': {
     amount: 20.90,
@@ -875,9 +1032,25 @@ const server =
         }
 
         if (
+          req.method === 'GET' &&
+          url.pathname === '/api/visitas'
+        ) {
+          return sendJson(
+            res,
+            200,
+            visitStats()
+          );
+        }
+
+        if (
           req.method ===
           'GET'
         ) {
+          recordVisit(
+            req,
+            url.pathname
+          );
+
           return serveStatic(
             req,
             res,
@@ -914,6 +1087,7 @@ const server =
 
 
 ensureDataFile();
+ensureVisitsFile();
 
 server.listen(
   PORT,
