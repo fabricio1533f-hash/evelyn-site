@@ -1082,10 +1082,15 @@ subscription-button {
 
   <div class="card-content" style="background: transparent !important;">
 
-    <div class="offer-promotion">
-      <img src="images/fotoperfilmelmaia1.jpg" alt="">
-      <span>Promoção 24h</span>
+<div class="offer-promotion">
+    <img src="images/fotoperfilmelmaia1.jpg" alt="">
+    <div>
+        <span>Promoção 24h</span>
+        <div class="offer-countdown">
+            Termina em <span id="offerCountdown">1 dia 0h 00m 00s</span>
+        </div>
     </div>
+</div>
 
     <a href="#" class="subscription-link" data-plan="30-dias">
 
@@ -2539,7 +2544,28 @@ Bem vindo(a) meus amores 🥰
           });
         });
       });
-    </script>
+   // CONTADOR INFINITO DA OFERTA
+const offerCountdown = document.getElementById("offerCountdown");
+
+const countdownStart = Date.now();
+const countdownCycle = 24 * 60 * 60 * 1000;
+
+function updateOfferCountdown() {
+    if (!offerCountdown) return;
+
+    const elapsed = (Date.now() - countdownStart) % countdownCycle;
+    const totalSeconds = Math.floor(elapsed / 1000);
+
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    offerCountdown.textContent =
+        `1 dia ${hours}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
+}
+
+updateOfferCountdown();
+setInterval(updateOfferCountdown, 1000); </script>
   
 <script src="../scripts/utms/latest.js" data-utmify-prevent-xcod-sck="" data-utmify-prevent-subids="" async="" defer=""></script>
   
