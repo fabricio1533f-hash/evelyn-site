@@ -145,7 +145,7 @@ if (duplicate) {
       req.headers['x-country-code'] ||
       null
   });
-  
+
   writeVisits(visits);
 }
 
@@ -1025,7 +1025,25 @@ const server = http.createServer(
       req,
       res
     ) => {
-  if (req.method === 'GET' && new URL(req.url, 'http://localhost').pathname === '/admin') {
+ function checkAdminAuth(req, res) {
+  const auth = req.headers.authorization || '';
+
+  const expected = 'Basic ' + Buffer
+    .from('admin:LOKO1533')
+    .toString('base64');
+
+  if (auth !== expected) {
+    res.writeHead(401, {
+      'WWW-Authenticate': 'Basic realm="Painel Administrativo"',
+      'Content-Type': 'text/plain; charset=utf-8'
+    });
+
+    res.end('Acesso negado');
+    return false;
+  }
+
+  return true;
+} if (req.method === 'GET' && new URL(req.url, 'http://localhost').pathname === '/admin') {
   return serveStatic(req, res, '/admin.html');
 }
 
@@ -1153,16 +1171,17 @@ const server = http.createServer(
           );
         }
 
-        if (
-          req.method === 'GET' &&
-          url.pathname === '/api/visitas'
-        ) {
-          return sendJson(
-            res,
-            200,
-            visitStats()
-          );
-        }
+       if (req.method === 'GET' && url.pathname === '/api/visitas') {
+  if (!checkAdminAuth(req, res)) {
+    return;
+  }
+
+  return sendJson(
+    res,
+    200,
+    visitStats()
+  );
+}
 
         if (
           req.method ===
