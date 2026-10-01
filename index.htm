@@ -2547,21 +2547,27 @@ Bem vindo(a) meus amores 🥰
    // CONTADOR INFINITO DA OFERTA
 const offerCountdown = document.getElementById("offerCountdown");
 
-const countdownStart = Date.now();
 const countdownCycle = 24 * 60 * 60 * 1000;
+const countdownStart = Date.now();
 
 function updateOfferCountdown() {
     if (!offerCountdown) return;
 
     const elapsed = (Date.now() - countdownStart) % countdownCycle;
-    const totalSeconds = Math.floor(elapsed / 1000);
+    const remaining = countdownCycle - elapsed;
 
-    const hours = Math.floor(totalSeconds / 3600);
+    const totalSeconds = Math.ceil(remaining / 1000);
+
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
 
     offerCountdown.textContent =
-        `1 dia ${hours}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
+        `${days} dia${days !== 1 ? "s" : ""} ` +
+        `${String(hours).padStart(2, "0")}h ` +
+        `${String(minutes).padStart(2, "0")}m ` +
+        `${String(seconds).padStart(2, "0")}s`;
 }
 
 updateOfferCountdown();
