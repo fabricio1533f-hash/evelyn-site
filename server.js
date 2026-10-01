@@ -116,7 +116,7 @@ function recordVisit(req, pathname) {
 
   const ua =
     req.headers['user-agent'] || '';
-    
+
 const visits =
   readVisits();
 
@@ -145,18 +145,7 @@ if (duplicate) {
       req.headers['x-country-code'] ||
       null
   });
-
-visits.push({
-  id: crypto.randomUUID(),
-  at: new Date().toISOString(),
-  path: pathname,
-  device: visitDevice(ua),
-  browser: visitBrowser(ua),
-  country:
-    req.headers['cf-ipcountry'] ||
-    req.headers['x-country-code'] ||
-    null
-});
+  
   writeVisits(visits);
 }
 
