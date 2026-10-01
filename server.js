@@ -132,62 +132,127 @@ function recordVisit(req, pathname) {
       null
   });
 
-  if (visits.length > 10000) {
-    visits.splice(
-      0,
-      visits.length - 10000
-    );
-  }
-
+visits.push({
+  id: crypto.randomUUID(),
+  at: new Date().toISOString(),
+  path: pathname,
+  device: visitDevice(ua),
+  browser: visitBrowser(ua),
+  country:
+    req.headers['cf-ipcountry'] ||
+    req.headers['x-country-code'] ||
+    null
+});
   writeVisits(visits);
 }
 
+const VISIT_RESET_FILE = path.join(
+  __dirname,
+  'data',
+  'visit-reset.json'
+);
+
+function getVisitResetState() {
+  try {
+    if (!fs.existsSync(VISIT_RESET_FILE)) {
+      const state = {
+        startedAt: new Date().toISOString()
+      };
+
+      fs.writeFileSync(
+        VISIT_RESET_FILE,
+        JSON.stringify(state, null, 2),
+        'utf8'
+      );
+
+      return state;
+    }
+
+    return JSON.parse(
+      fs.readFileSync(
+        VISIT_RESET_FILE,
+        'utf8'
+      )
+    );
+  } catch {
+    return {
+      startedAt: new Date().toISOString()
+    };
+  }
+}
+
+function resetVisitsIfNeeded() {
+  const state = getVisitResetState();
+
+  const startedAt =
+    new Date(state.startedAt).getTime();
+
+  const now = Date.now();
+
+  const twentyFourHours =
+    24 * 60 * 60 * 1000;
+
+  if (
+    now - startedAt >=
+    twentyFourHours
+  ) {
+    writeVisits([]);
+
+    const newState = {
+      startedAt: new Date().toISOString()
+    };
+
+    fs.writeFileSync(
+      VISIT_RESET_FILE,
+      JSON.stringify(newState, null, 2),
+      'utf8'
+    );
+  }
+}
+
 function visitStats() {
+  resetVisitsIfNeeded();
+
   const visits =
     readVisits();
 
-  const today =
-    new Date().toISOString().slice(0, 10);
-
-  const todayVisits =
-    visits.filter(
-      v => String(v.at).slice(0, 10) === today
-    );
-
   const fiveMin =
-    Date.now() - 5 * 60 * 1000;
+    Date.now() -
+    5 * 60 * 1000;
 
   return {
-    today: todayVisits.length,
+    today: visits.length,
 
     visitorsNow:
       visits.filter(
         v =>
-          new Date(v.at).getTime() >= fiveMin
+          new Date(v.at).getTime() >=
+          fiveMin
       ).length,
 
     devices: {
       Celular:
-        todayVisits.filter(
+        visits.filter(
           v => v.device === 'Celular'
         ).length,
 
       PC:
-        todayVisits.filter(
+        visits.filter(
           v => v.device === 'PC'
         ).length,
 
       Tablet:
-        todayVisits.filter(
+        visits.filter(
           v => v.device === 'Tablet'
         ).length
     },
 
     recent:
-      visits.slice(-30).reverse()
+      visits
+        .slice()
+        .reverse()
   };
 }
-
 const PLANS = {
   '30-dias': {
     amount: 20.90,
