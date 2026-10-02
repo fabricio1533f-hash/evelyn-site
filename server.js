@@ -258,7 +258,7 @@ function visitStats() {
 }
 const PLANS = {
   '30-dias': {
-    amount: 9.90,
+    amount: 20.90,
     label: 'Assinar agora'
   },
 
