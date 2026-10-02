@@ -221,7 +221,194 @@ function writeOrders(orders) {
     ORDERS_FILE
   );
 }
+function sendJson(
+  res,
+  status,
+  body
+) {
+  const payload =
+    JSON.stringify(body);
 
+  res.writeHead(
+    status,
+    {
+      'Content-Type':
+        'application/json; charset=utf-8',
+
+      'Cache-Control':
+        'no-store',
+
+      'Access-Control-Allow-Origin':
+        '*'
+    }
+  );
+
+  res.end(payload);
+}
+
+
+function readBody(
+  req,
+  maxBytes = 100000
+) {
+  return new Promise(
+    (resolve, reject) => {
+
+      let body = '';
+
+      req.on(
+        'data',
+        chunk => {
+
+          body += chunk;
+
+          if (
+            Buffer.byteLength(body) >
+            maxBytes
+          ) {
+
+            req.destroy();
+
+            reject(
+              new Error(
+                'Payload too large'
+              )
+            );
+          }
+        }
+      );
+
+      req.on(
+        'end',
+        () => resolve(body)
+      );
+
+      req.on(
+        'error',
+        reject
+      );
+    }
+  );
+}
+
+
+function serveStatic(
+  req,
+  res,
+  pathname
+) {
+
+  let filePath =
+    pathname === '/'
+      ? path.join(
+          SITE_DIR,
+          'index.htm'
+        )
+      : path.join(
+          SITE_DIR,
+          pathname.replace(
+            /^\//,
+            ''
+          )
+        );
+
+  filePath =
+    path.normalize(
+      filePath
+    );
+
+  if (
+    !filePath.startsWith(
+      SITE_DIR
+    )
+  ) {
+
+    return sendJson(
+      res,
+      403,
+      {
+        error:
+          'forbidden'
+      }
+    );
+  }
+
+  if (
+    !fs.existsSync(
+      filePath
+    ) ||
+    !fs.statSync(
+      filePath
+    ).isFile()
+  ) {
+
+    return sendJson(
+      res,
+      404,
+      {
+        error:
+          'not_found'
+      }
+    );
+  }
+
+  const ext =
+    path.extname(
+      filePath
+    ).toLowerCase();
+
+  const types = {
+
+    '.htm':
+      'text/html; charset=utf-8',
+
+    '.html':
+      'text/html; charset=utf-8',
+
+    '.css':
+      'text/css; charset=utf-8',
+
+    '.js':
+      'application/javascript; charset=utf-8',
+
+    '.json':
+      'application/json; charset=utf-8',
+
+    '.jpg':
+      'image/jpeg',
+
+    '.jpeg':
+      'image/jpeg',
+
+    '.png':
+      'image/png',
+
+    '.webp':
+      'image/webp',
+
+    '.mp4':
+      'video/mp4',
+
+    '.svg':
+      'image/svg+xml',
+
+    '.ico':
+      'image/x-icon'
+  };
+
+  res.writeHead(
+    200,
+    {
+      'Content-Type':
+        types[ext] ||
+        'application/octet-stream'
+    }
+  );
+
+  fs.createReadStream(
+    filePath
+  ).pipe(res);
+}
 // ============================================================
 // CONFIGURAÇÃO DAS GATEWAYS
 // ============================================================
