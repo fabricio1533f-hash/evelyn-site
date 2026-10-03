@@ -94,7 +94,7 @@ const FIXED_CUSTOMER = {
 
 const PLANS = {
   '30-dias': {
-    amount: 20.90,
+    amount: 9.90,
     label: 'Assinar agora'
   },
 
