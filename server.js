@@ -58,6 +58,12 @@ const SYNCPAY_CLIENT_ID =
 const SYNCPAY_CLIENT_SECRET =
   process.env.SYNCPAY_CLIENT_SECRET || '';
 
+const SILLIENTPAY_CLIENT_ID =
+  process.env.SILLIENTPAY_CLIENT_ID || '';
+
+const SILLIENTPAY_CLIENT_SECRET =
+  process.env.SILLIENTPAY_CLIENT_SECRET || '';
+
 const SYNCPAY_WEBHOOK_SECRET =
   process.env.SYNCPAY_WEBHOOK_SECRET || '';
 
@@ -457,19 +463,29 @@ function readGatewayConfig() {
 function writeGatewayConfig(config) {
   ensureGatewayConfigFile();
 
+  const allowedGateways = [
+    'omegapay',
+    'syncpay',
+    'sillientpay'
+  ];
+
+  const primaryGateway =
+    allowedGateways.includes(config.primaryGateway)
+      ? config.primaryGateway
+      : 'omegapay';
+
+  let fallbackGateway =
+    allowedGateways.includes(config.fallbackGateway)
+      ? config.fallbackGateway
+      : 'syncpay';
+
   const safeConfig = {
-    primaryGateway:
-      config.primaryGateway === 'syncpay'
-        ? 'syncpay'
-        : 'omegapay',
+    primaryGateway,
 
     fallbackEnabled:
       config.fallbackEnabled === true,
 
-    fallbackGateway:
-      config.fallbackGateway === 'omegapay'
-        ? 'omegapay'
-        : 'syncpay'
+    fallbackGateway
   };
 
   // Impede escolher a mesma gateway
@@ -479,9 +495,11 @@ function writeGatewayConfig(config) {
     safeConfig.fallbackGateway
   ) {
     safeConfig.fallbackGateway =
-      safeConfig.primaryGateway === 'omegapay'
-        ? 'syncpay'
-        : 'omegapay';
+      allowedGateways.find(
+        gateway =>
+          gateway !==
+          safeConfig.primaryGateway
+      ) || 'omegapay';
   }
 
   const tmp =
@@ -503,7 +521,6 @@ function writeGatewayConfig(config) {
 
   return safeConfig;
 }
-
 // ============================================================
 // VISITAS
 // ============================================================
@@ -1149,6 +1166,239 @@ async function createSyncPayPix(body) {
       'syncpay'
   };
 }
+// ============================================================
+// SILLIENTPAY — CRIAÇÃO DO PIX
+//
+// Usa os mesmos dados fixos do checkout.
+// O navegador envia somente o plano.
+// ============================================================
+
+async function createSillientPayPix(body) {
+  const plan =
+    PLANS[body.plan];
+
+  if (!plan) {
+    throw Object.assign(
+      new Error(
+        'Plano inválido.'
+      ),
+      {
+        status: 400
+      }
+    );
+  }
+
+  if (
+    !SILLIENTPAY_CLIENT_ID ||
+    !SILLIENTPAY_CLIENT_SECRET
+  ) {
+    throw Object.assign(
+      new Error(
+        'SillientPay credentials are not configured on the server.'
+      ),
+      {
+        status: 500
+      }
+    );
+  }
+
+  const identifier =
+    `evelyn_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`;
+
+  const credentials =
+    Buffer
+      .from(
+        `${SILLIENTPAY_CLIENT_ID}:${SILLIENTPAY_CLIENT_SECRET}`
+      )
+      .toString('base64');
+
+  const payload = {
+    method:
+      'pix',
+
+    amount:
+      Math.round(
+        Number(plan.amount) * 100
+      ),
+
+    description:
+      `Evelyn - ${plan.label}`,
+
+    customer: {
+      name:
+        FIXED_CUSTOMER.name,
+
+      email:
+        FIXED_CUSTOMER.email,
+
+      document:
+        FIXED_CUSTOMER.document,
+
+      phone:
+        FIXED_CUSTOMER.phone
+    },
+
+    pix: {
+      expiresInDays:
+        1
+    }
+  };
+
+  console.log(
+    'Criando PIX SillientPay:',
+    {
+      identifier,
+
+      plan:
+        body.plan,
+
+      amount:
+        plan.amount
+    }
+  );
+
+  const response =
+    await fetch(
+      'https://api.sillientpay.com/api/v1/transactions',
+      {
+        method:
+          'POST',
+
+        headers: {
+          'Authorization':
+            `Basic ${credentials}`,
+
+          'Content-Type':
+            'application/json',
+
+          'Accept':
+            'application/json'
+        },
+
+        body:
+          JSON.stringify(payload)
+      }
+    );
+
+  const data =
+    await response
+      .json()
+      .catch(() => ({}));
+
+  if (
+    !response.ok ||
+    !data.id ||
+    !data.qrCode
+  ) {
+    console.error(
+      'SillientPay PIX error:',
+      {
+        status:
+          response.status,
+
+        response:
+          data
+      }
+    );
+
+    throw Object.assign(
+      new Error(
+        data.message ||
+        data.error ||
+        `SillientPay PIX failed (${response.status})`
+      ),
+      {
+        status:
+          response.status || 502
+      }
+    );
+  }
+
+  const orders =
+    readOrders();
+
+  orders[identifier] = {
+    identifier,
+
+    transactionId:
+      data.id,
+
+    gateway:
+      'sillientpay',
+
+    plan:
+      body.plan,
+
+    amount:
+      plan.amount,
+
+    status:
+      data.status ||
+      'pendente',
+
+    customer: {
+      name:
+        FIXED_CUSTOMER.name,
+
+      email:
+        FIXED_CUSTOMER.email,
+
+      phone:
+        FIXED_CUSTOMER.phone
+    },
+
+    pix: {
+      expiresAt:
+        data.expiresAt ||
+        null
+    },
+
+    createdAt:
+      new Date().toISOString()
+  };
+
+  writeOrders(
+    orders
+  );
+
+  return {
+    ok:
+      true,
+
+    identifier,
+
+    transactionId:
+      data.id,
+
+    pix_code:
+      data.qrCode,
+
+    pix_image:
+      data.qrCodeUrl ||
+      '',
+
+    expiresAt:
+      data.expiresAt ||
+      null,
+
+    amount:
+      plan.amount,
+
+    label:
+      plan.label,
+
+    status:
+      data.status ||
+      'pendente',
+
+    transactionStatus:
+      data.status ||
+      null,
+
+    gateway:
+      'sillientpay'
+  };
+}
 
 // ============================================================
 // OMEGAPAY — CRIAÇÃO DO PIX
@@ -1405,6 +1655,10 @@ async function createOmegaPayPix(body) {
 function getGatewayFunction(gateway) {
   if (gateway === 'syncpay') {
     return createSyncPayPix;
+  }
+
+  if (gateway === 'sillientpay') {
+    return createSillientPayPix;
   }
 
   return createOmegaPayPix;
@@ -1723,7 +1977,11 @@ function sendAdminPage(res) {
       SYNCPAY_CLIENT_ID &&
       SYNCPAY_CLIENT_SECRET
     );
-
+const sillientPayConfigured =
+  Boolean(
+    SILLIENTPAY_CLIENT_ID &&
+    SILLIENTPAY_CLIENT_SECRET
+  );
   const html = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -2112,6 +2370,10 @@ function sendAdminPage(res) {
               <option value="syncpay">
                 SyncPay
               </option>
+              
+              <option value="sillientpay">
+  SillientPay
+</option>
 
             </select>
 
@@ -2160,6 +2422,10 @@ function sendAdminPage(res) {
               <option value="omegapay">
                 OmegaPay
               </option>
+              
+              <option value="sillientpay">
+  SillientPay
+</option>
 
             </select>
 
@@ -2245,7 +2511,27 @@ function sendAdminPage(res) {
               </span>
 
             </div>
+<div class="status-row">
 
+    <span class="status-name">
+        SillientPay
+    </span>
+
+    <span
+        class="${
+            sillientPayConfigured
+                ? 'status-ok'
+                : 'status-missing'
+        }"
+    >
+        ${
+            sillientPayConfigured
+                ? 'Configurada'
+                : 'Não configurada'
+        }
+    </span>
+
+</div>
           </div>
 
           <div class="security-note">
@@ -2600,7 +2886,63 @@ function sendAdminPage(res) {
 // ============================================================
 // SERVIDOR HTTP + ROTAS
 // ============================================================
+// ================================================================
+// WEBHOOK SILLIENTPAY
+// ================================================================
+function handleSillientPayWebhook(payload) {
+  try {
+    const event = String(payload?.event || '');
+    const data = payload?.data || {};
+    const transactionId = String(data.id || '');
+    const status = String(data.status || '').toLowerCase();
 
+    if (!transactionId) {
+      return {
+        status: 400,
+        body: { error: 'Transaction ID ausente.' }
+      };
+    }
+
+    const orders = readOrders();
+
+    const identifier = Object.keys(orders).find((id) => {
+      return (
+        orders[id] &&
+        orders[id].gateway === 'sillientpay' &&
+        String(orders[id].transactionId || '') === transactionId
+      );
+    });
+
+    if (!identifier) {
+      return {
+        status: 200,
+        body: { ok: true, ignored: true }
+      };
+    }
+
+    if (event === 'transaction.paid' || status === 'pago') {
+      orders[identifier].status = 'paid';
+      orders[identifier].paidAt =
+        data.paidAt || new Date().toISOString();
+    } else if (status) {
+      orders[identifier].status = status;
+    }
+
+    writeOrders(orders);
+
+    return {
+      status: 200,
+      body: { ok: true }
+    };
+  } catch (error) {
+    console.error('Erro no webhook SillientPay:', error);
+
+    return {
+      status: 500,
+      body: { error: 'Erro interno no webhook.' }
+    };
+  }
+}
 const server = http.createServer(
   async (
     req,
@@ -2787,47 +3129,51 @@ const server = http.createServer(
 
         }
 
-        const primaryGateway =
-          body.primaryGateway ===
-            'syncpay'
-            ? 'syncpay'
-            : 'omegapay';
+        const allowedGateways = [
+  'omegapay',
+  'syncpay',
+  'sillientpay'
+];
 
-        let fallbackGateway =
-          body.fallbackGateway ===
-            'omegapay'
-            ? 'omegapay'
-            : 'syncpay';
+const primaryGateway =
+  allowedGateways.includes(
+    body.primaryGateway
+  )
+    ? body.primaryGateway
+    : 'omegapay';
 
-        const fallbackEnabled =
-          Boolean(
-            body.fallbackEnabled
-          );
+let fallbackGateway =
+  allowedGateways.includes(
+    body.fallbackGateway
+  )
+    ? body.fallbackGateway
+    : 'syncpay';
 
+const fallbackEnabled =
+  Boolean(
+    body.fallbackEnabled
+  );
 
-        // Nunca permite que a gateway
-        // principal e o fallback sejam iguais.
+// Nunca permite que a gateway
+// principal e o fallback sejam iguais.
+if (
+  primaryGateway ===
+  fallbackGateway
+) {
+  fallbackGateway =
+    allowedGateways.find(
+      gateway =>
+        gateway !== primaryGateway
+    ) || 'omegapay';
+}
 
-        if (
-          primaryGateway ===
-          fallbackGateway
-        ) {
-          fallbackGateway =
-            primaryGateway ===
-              'omegapay'
-              ? 'syncpay'
-              : 'omegapay';
-        }
+const config = {
+  primaryGateway,
 
+  fallbackEnabled,
 
-        const config = {
-          primaryGateway,
-
-          fallbackEnabled,
-
-          fallbackGateway
-        };
-
+  fallbackGateway
+};
 
         writeGatewayConfig(
           config
@@ -2976,8 +3322,54 @@ const server = http.createServer(
         );
       }
 
+// ======================================================
+// WEBHOOK SILLIENTPAY
+// ======================================================
 
-      // ======================================================
+// COLOQUE O BLOCO DO SILLENTPAY AQUI
+
+if (
+  req.method === 'POST' &&
+  url.pathname ===
+    '/webhooks/sillientpay'
+) {
+  const raw =
+    await readBody(req);
+
+  let payload;
+
+  try {
+    payload =
+      JSON.parse(raw);
+  } catch {
+    return sendJson(
+      res,
+      400,
+      {
+        error:
+          'invalid_json'
+      }
+    );
+  }
+
+  const result =
+    handleSillientPayWebhook(
+      payload
+    );
+
+  return sendJson(
+    res,
+    result.status,
+    result.body
+  );
+}
+
+
+// VISITAS
+
+// VISITAS
+// ======================================================
+        // ======================================================
       // VISITAS
       // ======================================================
 
